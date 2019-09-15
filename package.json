@@ -1,0 +1,35 @@
+{
+  "name": "ableton-parser",
+  "version": "1.0.0",
+  "description": "A NodeJs based Ableton parser to parse ableton-live files(*als) ",
+  "main": "build/index.js",
+  "types": "build/index.d.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shresthagrawal/ableton-parser.git"
+  },
+  "keywords": [
+    "ableton",
+    "parser",
+    "music",
+    "live"
+  ],
+  "author": "Shresth Agrawal <shresthagrawal.31@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shresthagrawal/ableton-parser/issues"
+  },
+  "homepage": "https://github.com/shresthagrawal/ableton-parser#readme",
+  "devDependencies": {
+    "@types/node": "12.7.5",
+    "typescript": "3.6.3"
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "zlib": "1.0.5"
+  }
+}
