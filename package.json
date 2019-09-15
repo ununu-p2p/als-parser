@@ -29,7 +29,9 @@
     "typescript": "3.6.3"
   },
   "dependencies": {
+    "@types/xml2js": "0.4.5",
     "fs": "0.0.1-security",
+    "xml2js": "0.4.22",
     "zlib": "1.0.5"
   }
 }

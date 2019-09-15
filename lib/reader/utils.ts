@@ -50,4 +50,13 @@ function fileExists(file: string): boolean {
 	}
 }
 
+export function readFileAsync(file: string): Promise<any> {
+	return new Promise((resolve, reject) => {
+		fs.readFile(file, function(err, data) {
+			if (err) reject(err);
+			resolve(data);
+		});
+	});
+}
+
 
