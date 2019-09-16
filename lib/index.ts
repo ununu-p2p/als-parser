@@ -1,8 +1,7 @@
-import { Reader } from "./reader/init";
+import { AbletonParser } from "./ableton";
 
 export async function parseFile(file: string) {
-	var reader = new Reader(file);
-	var xmlJs = await reader.load();
-	// console.log(xmlJs.Ableton.LiveSet[0].Tracks);
-	return xmlJs;
+	var abletonParser = new AbletonParser(file);
+	await abletonParser.load();
+	return abletonParser;
 }
