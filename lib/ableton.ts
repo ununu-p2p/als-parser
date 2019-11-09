@@ -13,4 +13,12 @@ export class AbletonParser {
 	getTracks() {
 		return this.xmlJs.Ableton.LiveSet[0].Tracks;
 	}
+	getTracksCount() {
+		var rawTracks = this.xmlJs.Ableton.LiveSet[0].Tracks[0];
+		var trackCount: {[index: string]: any} = new Object();
+		for (var trackGroup in rawTracks) {
+			trackCount[trackGroup] = rawTracks[trackGroup].length;
+		} 
+		return trackCount;
+	}
 }
