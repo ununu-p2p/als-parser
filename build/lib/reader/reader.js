@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 var xml_1 = require("./xml");
+exports.INVALID_FILE = new Error("File type cannot be recognized");
 var Reader = /** @class */ (function () {
     function Reader(file) {
         this.file = file;
@@ -51,7 +52,10 @@ var Reader = /** @class */ (function () {
                     case 0: return [4 /*yield*/, utils_1.getType(this.file)];
                     case 1:
                         fileType = _b.sent();
-                        if (!(fileType != undefined)) return [3 /*break*/, 6];
+                        if (fileType == undefined)
+                            throw exports.INVALID_FILE;
+                        if (fileType.mime != "application/xml" && fileType.mime != "application/gzip")
+                            throw exports.INVALID_FILE;
                         if (!(fileType.mime != "application/xml")) return [3 /*break*/, 4];
                         return [4 /*yield*/, utils_1.copyFileAsync(this.file, this.gzfile)];
                     case 2:
@@ -66,7 +70,6 @@ var Reader = /** @class */ (function () {
                     case 5:
                         _a.xmlJs = _b.sent();
                         return [2 /*return*/, this.xmlJs];
-                    case 6: throw new Error("File type cannot be determined");
                 }
             });
         });
