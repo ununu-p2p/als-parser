@@ -45,9 +45,9 @@ describe('Reader', function() {
 
         it('When the valid extracted(xml) als is given', function(done) {
             // Create a copy of the extracted xml as .als
-            let test_als = changeExt(path.join(tmpDir, sampleXml), '.als');
-            copySync(path.join(tmpDir, sampleXml), test_als);
-            let reader = new Reader(test_als);
+            let tmpAls = changeExt(path.join(tmpDir, sampleXml), '.als');
+            copySync(path.join(tmpDir, sampleXml), tmpAls);
+            let reader = new Reader(tmpAls);
             reader.load().should.eventually.eql(this.expected_xml).notify(done);
         });
 
