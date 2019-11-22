@@ -2,6 +2,9 @@ import { changeExt, getType, copyFileAsync, extractGz } from "./utils";
 import { loadXml } from "./xml";
 import path from "path";
 
+
+export const INVALID_FILE = new Error("File type cannot be recognized");
+
 export class Reader {
 	file: string;
 	gzfile: string;
@@ -12,18 +15,16 @@ export class Reader {
 	}
 
 	async load() {
+		// TODO: Make Parser Smart, when the project folder is given find the project file.
 		var fileType = await getType(this.file);
-		if (fileType != undefined) {
-			// If file is not already extracted 
-			if (fileType.mime != "application/xml") {
-				await copyFileAsync(this.file, this.gzfile);
-				await extractGz(this.gzfile, this.file);
-			}
-			this.xmlJs = await loadXml(this.file);
-			return this.xmlJs;
+		if (fileType == undefined) throw INVALID_FILE;
+		if (fileType.mime != "application/xml" && fileType.mime != "application/gzip") throw INVALID_FILE;
+		// If file is not already extracted
+		if (fileType.mime != "application/xml") {
+			await copyFileAsync(this.file, this.gzfile);
+			await extractGz(this.gzfile, this.file);
 		}
-		else {
-			throw new Error("File type cannot be determined");
-		}
+		this.xmlJs = await loadXml(this.file);
+		return this.xmlJs;
 	}
 } 
