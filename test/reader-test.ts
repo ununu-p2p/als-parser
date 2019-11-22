@@ -29,13 +29,13 @@ describe('Reader', function() {
             // Create a copy of the sample files.
             // This is important as the parser modifies the origional file.
             copySync(resDir, tmpDir);
-            this.expected_xml = await loadXml(path.join(tmpDir, sampleXml));
+            this.expectedXml = await loadXml(path.join(tmpDir, sampleXml));
         });
 
         it('When the valid gzipped als is given', function(done) {
             let reader = new Reader(path.join(tmpDir, sampleAls));
             // eql is used instead of equal as the objects are not directly comparable
-            reader.load().should.eventually.eql(this.expected_xml).notify(done);
+            reader.load().should.eventually.eql(this.expectedXml).notify(done);
         });
 
         it('When the invalid file type is given', function(done) {
@@ -48,7 +48,7 @@ describe('Reader', function() {
             let tmpAls = changeExt(path.join(tmpDir, sampleXml), '.als');
             copySync(path.join(tmpDir, sampleXml), tmpAls);
             let reader = new Reader(tmpAls);
-            reader.load().should.eventually.eql(this.expected_xml).notify(done);
+            reader.load().should.eventually.eql(this.expectedXml).notify(done);
         });
 
         after(function() {
