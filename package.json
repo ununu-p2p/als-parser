@@ -7,6 +7,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
     "coverage": "nyc mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "build": "tsc"
   },
   "nyc": {
