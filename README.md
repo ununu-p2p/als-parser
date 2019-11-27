@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ununu-p2p/als-parser.svg?branch=master)](https://travis-ci.com/ununu-p2p/als-parser)
+
 #### Ableton Parser
 Yet another node module! Parses the Ableton Live(*als) File to extract the basic info. 
 
