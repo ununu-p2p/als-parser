@@ -13,7 +13,7 @@ const expect = chai.expect;
 // Test resource directory
 const resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
-const tmpDir = "./test2/tmp";
+const tmpDir = "./test/tmp2";
 
 // Sample file relative path to res dir
 const sampleAls = "sample-project/sample-project.als";
