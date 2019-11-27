@@ -4,3 +4,7 @@ node_js:
 cache:
   directories:
     - "node_modules"
+
+script:
+  - npm run-script coverage 
+  - npm run-script report-coverage
