@@ -17,7 +17,7 @@ export class Reader {
 	async load() {
 		// TODO: Make Parser Smart, when the project folder is given find the project file.
 		var fileType = await getType(this.file);
-		if (fileType == undefined) throw INVALID_FILE;
+		if (fileType === undefined) throw INVALID_FILE;
 		if (fileType.mime != "application/xml" && fileType.mime != "application/gzip") throw INVALID_FILE;
 		// If file is not already extracted
 		if (fileType.mime != "application/xml") {

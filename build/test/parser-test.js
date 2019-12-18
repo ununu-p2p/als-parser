@@ -41,8 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var chai_1 = __importDefault(require("chai"));
 var chai_as_promised_1 = __importDefault(require("chai-as-promised"));
-var reader_1 = require("../lib/reader/reader");
-var utils_1 = require("../lib/reader/utils");
+var index_1 = require("../lib/index");
 var xml_1 = require("../lib/reader/xml");
 var fs_extra_1 = require("fs-extra");
 var path_1 = __importDefault(require("path"));
@@ -52,13 +51,12 @@ var expect = chai_1.default.expect;
 // Test resource directory
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
-var tmpDir = "./test/tmp";
+var tmpDir = "./test/tmp2";
 // Sample file relative path to res dir
 var sampleAls = "sample-project/sample-project.als";
 var sampleXml = "sample-project/extracted.xml";
-var invalid_file = "invalid-file";
-describe('Reader', function () {
-    describe('Load Reader', function () {
+describe('Parser', function () {
+    describe('Parse File', function () {
         // TODO: Put proper analytics to check how slow?
         this.slow(100);
         before(function () {
@@ -79,21 +77,27 @@ describe('Reader', function () {
                 });
             });
         });
-        it('When the valid gzipped als is given', function (done) {
-            var reader = new reader_1.Reader(path_1.default.join(tmpDir, sampleAls));
-            // eql is used instead of equal as the objects are not directly comparable
-            reader.load().should.eventually.eql(this.expectedXml).notify(done);
+        it('Load when als project file is given', function (done) {
+            var parser = index_1.parseFile(path_1.default.join(tmpDir, sampleAls));
+            parser.should.eventually.have.deep.property('xmlJs', this.expectedXml).notify(done);
         });
-        it('When the invalid file type is given', function (done) {
-            var reader = new reader_1.Reader(path_1.default.join(tmpDir, invalid_file));
-            reader.load().should.eventually.rejectedWith(reader_1.INVALID_FILE).notify(done);
-        });
-        it('When the valid extracted(xml) als is given', function (done) {
-            // Create a copy of the extracted xml as .als
-            var tmpAls = utils_1.changeExt(path_1.default.join(tmpDir, sampleXml), '.als');
-            fs_extra_1.copySync(path_1.default.join(tmpDir, sampleXml), tmpAls);
-            var reader = new reader_1.Reader(tmpAls);
-            reader.load().should.eventually.eql(this.expectedXml).notify(done);
+        it('Get tracks count when als project file is given', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, sampleAls))];
+                        case 1:
+                            parser = _a.sent();
+                            parser.getTracksCount().should.eql({
+                                MidiTrack: 1,
+                                AudioTrack: 1,
+                                ReturnTrack: 2
+                            });
+                            return [2 /*return*/];
+                    }
+                });
+            });
         });
         after(function () {
             // Cleanup after test

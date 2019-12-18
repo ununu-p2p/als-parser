@@ -52,7 +52,7 @@ var Reader = /** @class */ (function () {
                     case 0: return [4 /*yield*/, utils_1.getType(this.file)];
                     case 1:
                         fileType = _b.sent();
-                        if (fileType == undefined)
+                        if (fileType === undefined)
                             throw exports.INVALID_FILE;
                         if (fileType.mime != "application/xml" && fileType.mime != "application/gzip")
                             throw exports.INVALID_FILE;
