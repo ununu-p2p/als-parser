@@ -1,12 +1,23 @@
 {
   "name": "ableton-parser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A NodeJs based Ableton parser to parse ableton-live files(*als) ",
   "main": "build/index.js",
   "types": "build/index.d.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
+    "coverage": "nyc mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
+    "report-coverage": "nyc --reporter=text-lcov mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx} > coverage.lcov && codecov",
     "build": "tsc"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ]
   },
   "repository": {
     "type": "git",
@@ -25,14 +36,25 @@
   },
   "homepage": "https://github.com/shresthagrawal/ableton-parser#readme",
   "devDependencies": {
+    "@types/chai": "4.2.5",
+    "@types/chai-as-promised": "7.1.2",
+    "@types/mocha": "5.2.7",
     "@types/node": "12.7.5",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "codecov": "3.6.1",
+    "mocha": "6.2.2",
+    "nyc": "14.1.1",
+    "ts-node": "8.5.2",
     "typescript": "3.6.3"
   },
   "dependencies": {
     "@types/file-type": "10.9.1",
+    "@types/fs-extra": "8.0.1",
     "@types/xml2js": "0.4.5",
     "file-type": "12.3.0",
     "fs": "0.0.1-security",
+    "fs-extra": "8.1.0",
     "xml2js": "0.4.22",
     "zlib": "1.0.5"
   }
