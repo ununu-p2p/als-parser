@@ -6,6 +6,7 @@
   "types": "build/index.d.js",
   "scripts": {
     "test": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
+    "testwith": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx} --grep", 
     "coverage": "nyc mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
     "report-coverage": "nyc --reporter=text-lcov mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx} > coverage.lcov && codecov",
     "build": "tsc"
