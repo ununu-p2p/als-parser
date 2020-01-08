@@ -14,6 +14,7 @@ const expect = chai.expect;
 const resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
 const tmpDir = "./test/tmp2";
+const tmpDir2 = "./test/tmp3";
 
 // Sample file relative path to res dir
 const sampleAls = "sample-project/sample-project.als";
@@ -59,15 +60,15 @@ describe('Parser', function() {
         before(async function() {
             // Create a copy of the sample files.
             // This is important as the parser modifies the origional file.
-            copySync(resDir, tmpDir);
-            this.parser = await parseFile(path.join(resDir, sampleAls));
+            copySync(resDir, tmpDir2);
+            this.parser = await parseFile(path.join(tmpDir2, sampleAls));
         });
         it('Get the list of resourcefiles when als project file is given', function() {
             this.parser.getResourceLocations().should.eql(resources);
         });
         after(function() {
             // Cleanup after test
-            remove(tmpDir);
+            remove(tmpDir2);
         });
     })
 });
