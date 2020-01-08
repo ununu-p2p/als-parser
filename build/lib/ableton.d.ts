@@ -7,4 +7,7 @@ export declare class AbletonParser {
     getTracksCount(): {
         [index: string]: any;
     };
+    getResourceLocations(): unknown[];
+    private appendResourceList;
+    changeResourceLocation(location: String): void;
 }

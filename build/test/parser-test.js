@@ -55,6 +55,11 @@ var tmpDir = "./test/tmp2";
 // Sample file relative path to res dir
 var sampleAls = "sample-project/sample-project.als";
 var sampleXml = "sample-project/extracted.xml";
+// Resource List
+var resources = [
+    'Users/ama/Downloads/Reverb Default.adv',
+    'Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+];
 describe('Parser', function () {
     describe('Parse File', function () {
         // TODO: Put proper analytics to check how slow?
@@ -98,6 +103,33 @@ describe('Parser', function () {
                     }
                 });
             });
+        });
+        after(function () {
+            // Cleanup after test
+            fs_extra_1.remove(tmpDir);
+        });
+    });
+    describe('Resource', function () {
+        before(function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            // Create a copy of the sample files.
+                            // This is important as the parser modifies the origional file.
+                            fs_extra_1.copySync(resDir, tmpDir);
+                            _a = this;
+                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(resDir, sampleAls))];
+                        case 1:
+                            _a.parser = _b.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        it('Get the list of resourcefiles when als project file is given', function () {
+            this.parser.getResourceLocations().should.eql(resources);
         });
         after(function () {
             // Cleanup after test

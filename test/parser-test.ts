@@ -17,7 +17,13 @@ const tmpDir = "./test/tmp2";
 
 // Sample file relative path to res dir
 const sampleAls = "sample-project/sample-project.als";
-const sampleXml = "sample-project/extracted.xml"
+const sampleXml = "sample-project/extracted.xml";
+
+// Resource List
+const resources = [
+  'Users/ama/Downloads/Reverb Default.adv',
+  'Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+];
 
 describe('Parser', function() {
     describe ('Parse File', function() {
@@ -49,4 +55,19 @@ describe('Parser', function() {
             remove(tmpDir);
         });
     });
+    describe ('Resource', function() {
+        before(async function() {
+            // Create a copy of the sample files.
+            // This is important as the parser modifies the origional file.
+            copySync(resDir, tmpDir);
+            this.parser = await parseFile(path.join(resDir, sampleAls));
+        });
+        it('Get the list of resourcefiles when als project file is given', function() {
+            this.parser.getResourceLocations().should.eql(resources);
+        });
+        after(function() {
+            // Cleanup after test
+            remove(tmpDir);
+        });
+    })
 });

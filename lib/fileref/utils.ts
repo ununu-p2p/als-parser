@@ -10,7 +10,8 @@ export function ascii2hex(str: string) {
 export function hex2ascii(hex: string) {
   let str = '';
   for (let i = 0; i < hex.length; i += 2) {
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      let val = parseInt(hex.substr(i, 2), 16);
+      if (val != 0) str += String.fromCharCode(val);
   }
   return str;
 }

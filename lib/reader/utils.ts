@@ -64,5 +64,3 @@ export function changeExt(file: string, newExt: string) {
 	parsePath.base = parsePath.base.substring(0, parsePath.base.lastIndexOf(".")) + newExt;
 	return path.format(parsePath);
 }
-
-

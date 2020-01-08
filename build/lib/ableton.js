@@ -37,6 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var reader_1 = require("./reader/reader");
+var fileref_1 = require("./fileref/fileref");
+var utils_1 = require("./utils");
 var AbletonParser = /** @class */ (function () {
     function AbletonParser(file) {
         this.file = file;
@@ -67,6 +69,19 @@ var AbletonParser = /** @class */ (function () {
             trackCount[trackGroup] = rawTracks[trackGroup].length;
         }
         return trackCount;
+    };
+    AbletonParser.prototype.getResourceLocations = function () {
+        var resList = new Set();
+        utils_1.deepRecurrsion(this.xmlJs, 'FileRef', this.appendResourceList, resList);
+        return Array.from(resList);
+    };
+    AbletonParser.prototype.appendResourceList = function (obj, resList) {
+        var fileref = new fileref_1.Fileref(obj[0]);
+        resList.add(fileref.getLocation());
+    };
+    AbletonParser.prototype.changeResourceLocation = function (location) {
+        // Modify the XmlJs
+        // Save the Modified XmlJs
     };
     return AbletonParser;
 }());

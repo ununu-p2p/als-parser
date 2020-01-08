@@ -1,4 +1,6 @@
 import { Reader } from "./reader/reader";
+import { Fileref } from "./fileref/fileref";
+import { deepRecurrsion } from "./utils"
 
 export class AbletonParser {
 	file: string;
@@ -21,4 +23,18 @@ export class AbletonParser {
 		} 
 		return trackCount;
 	}
+	getResourceLocations() {
+		let resList = new Set();
+	    deepRecurrsion(this.xmlJs, 'FileRef', this.appendResourceList, resList);
+	    return Array.from(resList);
+	}
+	private appendResourceList(obj: any, resList: Set<String>) {
+	    let fileref = new Fileref(obj[0]);
+	    resList.add(fileref.getLocation()); 
+	}
+	changeResourceLocation(location: String) {
+		// Modify the XmlJs
+		// Save the Modified XmlJs
+	}
 }
+
