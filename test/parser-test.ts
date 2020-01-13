@@ -41,9 +41,9 @@ describe('Parser', function() {
             this.expectedXml = await loadXml(path.join(tmpDir, sampleXml));
         });
 
-        it('Load when als project file is given', function(done) {
-            let parser = parseFile(path.join(tmpDir, sampleAls));
-            parser.should.eventually.have.deep.property('xmlJs', this.expectedXml).notify(done);
+        it('Load when als project file is given', async function() {
+            let parser = await parseFile(path.join(tmpDir, sampleAls));
+            parser.reader.xmlJs.should.eql(this.expectedXml);
         });
 
         it('Get tracks count when als project file is given', async function() {

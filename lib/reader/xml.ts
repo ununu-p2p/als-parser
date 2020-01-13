@@ -1,8 +1,14 @@
-import { Parser } from "xml2js";
-import { readFileAsync } from "./utils";
+import { Parser, Builder } from "xml2js";
+import { readFileAsync, writeFileAsync } from "./utils";
 
 export async function loadXml(file: string) {
-	var parser = new Parser();
-	var raw_xml = await readFileAsync(file);
+	let parser = new Parser();
+	let raw_xml = await readFileAsync(file);
 	return parser.parseStringPromise(raw_xml);
+}
+
+export async function saveXml(file: string, obj: any) {
+    let builder = new Builder();
+    let xml = builder.buildObject(obj);
+    writeFileAsync(file, xml);
 }

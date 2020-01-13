@@ -4,19 +4,19 @@ import { deepRecurrsion } from "./utils"
 
 export class AbletonParser {
 	file: string;
-	xmlJs: any;
+	reader: any;
 	constructor(file: string) {
 		this.file = file;
 	}
 	async load() {
-		var reader = new Reader(this.file);
-		this.xmlJs = await reader.load();
+		this.reader = new Reader(this.file);
+		await this.reader.load();
 	}
 	getTracks() {
-		return this.xmlJs.Ableton.LiveSet[0].Tracks;
+		return this.reader.xmlJs.Ableton.LiveSet[0].Tracks;
 	}
 	getTracksCount() {
-		var rawTracks = this.xmlJs.Ableton.LiveSet[0].Tracks[0];
+		var rawTracks = this.reader.xmlJs.Ableton.LiveSet[0].Tracks[0];
 		var trackCount: {[index: string]: any} = new Object();
 		for (var trackGroup in rawTracks) {
 			trackCount[trackGroup] = rawTracks[trackGroup].length;
@@ -25,12 +25,12 @@ export class AbletonParser {
 	}
 	getResourceLocations() {
 		let resList = new Set();
-	    deepRecurrsion(this.xmlJs, 'FileRef', this.appendResourceList, resList);
+	    deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendResourceList, resList);
 	    return Array.from(resList);
 	}
 	getFilerefs() {
 		let resList = new Set();
-	    deepRecurrsion(this.xmlJs, 'FileRef', this.appendReferenceList, resList);
+	    deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendReferenceList, resList);
 	    return Array.from(resList);
 	}
 	private appendReferenceList(obj: any, resList: Set<any>) {
@@ -42,8 +42,9 @@ export class AbletonParser {
 	}
 	changeResourceLocations(location: String) {
 		// Modify the XmlJ
-		deepRecurrsion(this.xmlJs, 'FileRef', this.changeLocation, location, this.file);
-		// Save the Modified XmlJs
+		deepRecurrsion(this.reader.xmlJs, 'FileRef', this.changeLocation, location, this.file);
+		// Save the Modified reader.xmlJs
+		this.reader.save('/tmp/test.als');
 	}
 	private changeLocation(obj: any, resourceFolder: string, project: string) {
 		let fileref = new Fileref(obj[0]);

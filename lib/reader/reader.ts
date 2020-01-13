@@ -1,5 +1,5 @@
 import { changeExt, getType, copyFileAsync, extractGz } from "./utils";
-import { loadXml } from "./xml";
+import { loadXml, saveXml } from "./xml";
 import path from "path";
 
 
@@ -26,5 +26,9 @@ export class Reader {
 		}
 		this.xmlJs = await loadXml(this.file);
 		return this.xmlJs;
+	}
+
+	async save(file: string) {
+		await saveXml(file, this.xmlJs);
 	}
 } 

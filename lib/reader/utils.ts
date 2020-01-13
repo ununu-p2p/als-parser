@@ -53,9 +53,17 @@ export function readFileAsync(file: string): Promise<any> {
 	});
 }
 
-export async function getType(file: string) {
-	var stream = await fileType.stream(fs.createReadStream(file));
-	return stream.fileType;
+export function writeFileAsync(file: string, data: string): Promise<any> {
+	return new Promise((resolve, reject) => {
+		fs.writeFile(file, data, function(err) {
+			if (err) reject(err);
+			resolve();
+		});
+	});
+}
+
+export function getType(file: string) {
+	return fileType.fromFile(file);
 }
 
 export function changeExt(file: string, newExt: string) {
