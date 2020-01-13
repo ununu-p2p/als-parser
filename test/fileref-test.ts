@@ -3,7 +3,6 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { ascii2hex, hex2ascii } from "../lib/fileref/utils";
 import { unmarshall, marshall, FilerefData } from "../lib/fileref/fileref-data";
-import { loadXml } from "../lib/reader/xml";
 import path from "path";
 
 chai.use(chaiAsPromised);
@@ -44,8 +43,9 @@ const header = "00000000015E000200000C4D6163696E746F73682048440000000000\
 
 const footer = "1300012F00001500020015FFFF0000";
 
+// TODO: Use a relative location as this location would not exist in every system.
 const location = "Users/shresthagrawal/Desktop/0001 20-Audio.aif";
-const newLocation = "Users/shresthagrawal/Desktop/a/Desktop/0001 20-Audio.aif";
+const newLocation = "/Users/shresthagrawal/Desktop/a/Desktop/0001 20-Audio.aif";
 const systemName = "Macintosh HD";
 const hex = "48656C6C6F20576F726C6421313233344023";
 const ascii = "Hello World!1234@#";
@@ -81,11 +81,6 @@ describe('Fileref', function() {
             let data = unmarshall(stream);
             data.setLocation(newLocation);
             marshall(data).should.equal(newStream);
-        });
-    });
-    describe ('FilerefXml', function() {
-        it('Change location when fileref Object is given', async function() {
-            // console.log(xml.Ableton.LiveSet[0].Tracks[0].AudioTrack[0].DeviceChain[0].MainSequencer[0].Sample[0]);
         });
     });
 });

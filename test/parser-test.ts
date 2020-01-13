@@ -20,8 +20,12 @@ const tmpDir2 = "./test/tmp3";
 const sampleAls = "sample-project/sample-project.als";
 const sampleXml = "sample-project/extracted.xml";
 
+const projectA = "resource-test/project/a.als";
+const projectB = "resource-test/project/b.als";
+
 // Resource List
 const resources = [
+  'Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/a/d/audio.aif',
   'Users/ama/Downloads/Reverb Default.adv',
   'Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
 ];
@@ -61,10 +65,26 @@ describe('Parser', function() {
             // Create a copy of the sample files.
             // This is important as the parser modifies the origional file.
             copySync(resDir, tmpDir2);
-            this.parser = await parseFile(path.join(tmpDir2, sampleAls));
+            this.parserA = await parseFile(path.join(resDir, projectA));
+            this.parserB = await parseFile(path.join(tmpDir2, projectB));
         });
         it('Get the list of resourcefiles when als project file is given', function() {
-            this.parser.getResourceLocations().should.eql(resources);
+            this.parserA.getResourceLocations().should.eql(resources);
+        });
+        it('Change location of all resourcefiles when als project file is given', function() {
+            let newlocation = './test/res/resource-test/b/d/';
+            this.parserA.changeResourceLocations(newlocation);
+            let refsA = this.parserA.getFilerefs();
+            let refsB = this.parserB.getFilerefs();
+            for (let index in refsA) {
+                let relativePathA = refsA[index].RelativePath[0].RelativePathElement;
+                let relativePathB = refsB[index].RelativePath[0].RelativePathElement;
+                let dataA = refsA[index].Data[0].replace(/\n/g, '').replace(/\t/g, '');
+                let dataB = refsB[index].Data[0].replace(/\n/g, '').replace(/\t/g, '');
+
+                relativePathA.should.eql(relativePathB);
+                dataA.should.eql(dataB);
+            }
         });
         after(function() {
             // Cleanup after test

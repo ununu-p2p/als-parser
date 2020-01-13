@@ -36,7 +36,7 @@ export function extractGz(src: string, dst: string): Promise<any> {
 }
 
 // checks whether a file exists
-function fileExists(file: string): boolean {
+export function fileExists(file: string): boolean {
 	try {
 		return fs.statSync(file).isFile();
 	} catch (err) {

@@ -31,6 +31,10 @@ export class FilerefData {
         return this.footer;
     }
     setLocation(location: string) {
+        // Store the absolute location but donot have the deliminator in the start
+        location = path.resolve(location);
+        console.log(location);
+        if (location[0] == path.sep) location = location.substr(1);
         this.location = location;
     }
 }
@@ -128,5 +132,5 @@ export function marshall(data: FilerefData) {
     // Total size update
     let lenStr = dec2hex(stream.length / 2);
     stream = replaceAt(stream, lenStr, 8);
-    return stream;    
+    return stream;
 }

@@ -28,13 +28,26 @@ export class AbletonParser {
 	    deepRecurrsion(this.xmlJs, 'FileRef', this.appendResourceList, resList);
 	    return Array.from(resList);
 	}
+	getFilerefs() {
+		let resList = new Set();
+	    deepRecurrsion(this.xmlJs, 'FileRef', this.appendReferenceList, resList);
+	    return Array.from(resList);
+	}
+	private appendReferenceList(obj: any, resList: Set<any>) {
+	    resList.add(obj[0]);
+	}
 	private appendResourceList(obj: any, resList: Set<String>) {
 	    let fileref = new Fileref(obj[0]);
 	    resList.add(fileref.getLocation()); 
 	}
-	changeResourceLocation(location: String) {
-		// Modify the XmlJs
+	changeResourceLocations(location: String) {
+		// Modify the XmlJ
+		deepRecurrsion(this.xmlJs, 'FileRef', this.changeLocation, location, this.file);
 		// Save the Modified XmlJs
+	}
+	private changeLocation(obj: any, resourceFolder: string, project: string) {
+		let fileref = new Fileref(obj[0]);
+		fileref.changeLocation(resourceFolder, project);
 	}
 }
 
