@@ -1,6 +1,6 @@
 export declare class AbletonParser {
     file: string;
-    xmlJs: any;
+    reader: any;
     constructor(file: string);
     load(): Promise<void>;
     getTracks(): any;
@@ -8,6 +8,9 @@ export declare class AbletonParser {
         [index: string]: any;
     };
     getResourceLocations(): unknown[];
+    getFilerefs(): unknown[];
+    private appendReferenceList;
     private appendResourceList;
-    changeResourceLocation(location: String): void;
+    changeResourceLocations(location: String): void;
+    private changeLocation;
 }

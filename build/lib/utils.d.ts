@@ -1,1 +1,1 @@
-export declare function deepRecurrsion(obj: any, key: string, callback: any, params: any): void;
+export declare function deepRecurrsion(obj: any, key: string, callback: any, ...params: any[]): void;

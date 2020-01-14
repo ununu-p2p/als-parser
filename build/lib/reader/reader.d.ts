@@ -5,4 +5,5 @@ export declare class Reader {
     xmlJs: any;
     constructor(file: string);
     load(): Promise<any>;
+    save(file: string): Promise<void>;
 }

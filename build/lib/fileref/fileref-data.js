@@ -31,6 +31,10 @@ var FilerefData = /** @class */ (function () {
         return this.footer;
     };
     FilerefData.prototype.setLocation = function (location) {
+        // Store the absolute location but donot have the deliminator in the start
+        location = path_1.default.resolve(location);
+        if (location[0] == path_1.default.sep)
+            location = location.substr(1);
         this.location = location;
     };
     return FilerefData;
