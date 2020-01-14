@@ -44,7 +44,7 @@ export class AbletonParser {
 		// Modify the XmlJ
 		deepRecurrsion(this.reader.xmlJs, 'FileRef', this.changeLocation, location, this.file);
 		// Save the Modified reader.xmlJs
-		this.reader.save('/tmp/test.als');
+		this.reader.save(this.file);
 	}
 	private changeLocation(obj: any, resourceFolder: string, project: string) {
 		let fileref = new Fileref(obj[0]);
