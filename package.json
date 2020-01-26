@@ -2,8 +2,8 @@
   "name": "ableton-parser",
   "version": "1.0.1",
   "description": "A NodeJs based Ableton parser to parse ableton-live files(*als) ",
-  "main": "build/index.js",
-  "types": "build/index.d.js",
+  "main": "build/lib/index.js",
+  "types": "build/lib/index.d.js",
   "scripts": {
     "test": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx}",
     "testwith": "mocha -r ts-node/register --watch-extensions ts,tsx test/**/*.{ts,tsx} --grep",
