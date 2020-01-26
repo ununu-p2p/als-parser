@@ -40,31 +40,36 @@ var FilerefData = /** @class */ (function () {
     return FilerefData;
 }());
 exports.FilerefData = FilerefData;
-function headEnd(stream, index) {
-    if (index > stream.length)
-        throw Error("Data of the ref cannot be recognised: 0200");
-    ;
-    // Find the control code 0200
-    index = stream.indexOf('0200', index) + 4;
-    if (index == -1)
-        throw Error("Data of the ref cannot be recognised: 0200");
-    ;
-    // Check if the control code is exactly the one we need
-    var locationLength = utils_1.hex2dec(stream.substr(index, 2));
-    if (stream.substr(index + 4 + (locationLength * 2), 4) == '0E00')
-        return index - 4;
-    return headEnd(stream, index + 1);
+function headEnd(stream) {
+    for (var index = 0; index < stream.length; index++) {
+        // Find the control code 0200
+        var i = stream.indexOf('0200', index);
+        if (i == -1)
+            throw Error("Data of the ref cannot be recognised: 0200");
+        ;
+        // Check if the control code is exactly the one we need
+        var locationLength = utils_1.hex2dec(stream.substr(i + 4, 2));
+        var controlPos = i + 6 + utils_1.lenPad(locationLength).length + (locationLength * 2);
+        if (stream.substr(controlPos, 4) == '0E00') {
+            return i;
+        }
+        index = i > index ? i : index;
+    }
+    throw Error("Data of the ref cannot be recognised: 0200");
+    return -1;
 }
 function unmarshall(stream) {
-    var cntr = headEnd(stream, 0);
+    var cntr = headEnd(stream);
     var header = stream.substr(0, cntr);
     // Next 4 control code
     cntr += 4;
-    // Next 2 location length, 2 padding
+    // Next 2 location length
     var locationLength = utils_1.hex2dec(stream.substr(cntr, 2));
-    cntr += 4;
+    cntr += 2;
     // Next locationLength as Location
     cntr += locationLength * 2;
+    // Padding
+    cntr += utils_1.lenPad(locationLength).length;
     // Next 4 control code
     if (stream.substr(cntr, 4) != '0E00')
         throw Error("Data of the ref cannot be recognised: 0E00");

@@ -1,6 +1,6 @@
 import { Reader } from "./reader/reader";
 import { Fileref } from "./fileref/fileref";
-import { deepRecurrsion } from "./utils"
+import { deepRecurrsion } from "./utils";
 
 export class AbletonParser {
 	file: string;
