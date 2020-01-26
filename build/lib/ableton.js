@@ -35,7 +35,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var path_1 = __importDefault(require("path"));
 var reader_1 = require("./reader/reader");
 var fileref_1 = require("./fileref/fileref");
 var utils_1 = require("./utils");
@@ -83,7 +87,7 @@ var AbletonParser = /** @class */ (function () {
     };
     AbletonParser.prototype.appendResourceList = function (obj, resList) {
         var fileref = new fileref_1.Fileref(obj[0]);
-        resList.add(fileref.getLocation());
+        resList.add(path_1.default.join('/', fileref.getLocation()));
     };
     AbletonParser.prototype.changeResourceLocations = function (location) {
         // Modify the XmlJ

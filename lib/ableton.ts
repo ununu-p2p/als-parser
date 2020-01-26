@@ -1,3 +1,4 @@
+import path from "path";
 import { Reader } from "./reader/reader";
 import { Fileref } from "./fileref/fileref";
 import { deepRecurrsion } from "./utils";
@@ -38,7 +39,7 @@ export class AbletonParser {
 	}
 	private appendResourceList(obj: any, resList: Set<String>) {
 	    let fileref = new Fileref(obj[0]);
-	    resList.add(fileref.getLocation()); 
+	    resList.add(path.join('/', fileref.getLocation())); 
 	}
 	changeResourceLocations(location: String) {
 		// Modify the XmlJ

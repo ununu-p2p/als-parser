@@ -60,14 +60,14 @@ var projectA = "resource-test/project/a.als";
 var projectB = "resource-test/project/b.als";
 // Resource List
 var resources = [
-    'Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/a/d/audio.aif',
-    'Users/ama/Downloads/Reverb Default.adv',
-    'Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/a/d/audio.aif',
+    '/Users/ama/Downloads/Reverb Default.adv',
+    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
 ];
 var modifiedResource = [
-    'Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/b/d/audio.aif',
-    'Users/ama/Downloads/Reverb Default.adv',
-    'Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/b/d/audio.aif',
+    '/Users/ama/Downloads/Reverb Default.adv',
+    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
 ];
 describe('Parser', function () {
     describe('Parse File', function () {

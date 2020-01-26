@@ -46,7 +46,6 @@ function headEnd(stream) {
         var i = stream.indexOf('0200', index);
         if (i == -1)
             throw Error("Data of the ref cannot be recognised: 0200");
-        ;
         // Check if the control code is exactly the one we need
         var locationLength = utils_1.hex2dec(stream.substr(i + 4, 2));
         var controlPos = i + 6 + utils_1.lenPad(locationLength).length + (locationLength * 2);
