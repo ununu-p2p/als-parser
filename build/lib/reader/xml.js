@@ -54,3 +54,15 @@ function loadXml(file) {
     });
 }
 exports.loadXml = loadXml;
+function saveXml(file, obj) {
+    return __awaiter(this, void 0, void 0, function () {
+        var builder, xml;
+        return __generator(this, function (_a) {
+            builder = new xml2js_1.Builder();
+            xml = builder.buildObject(obj);
+            utils_1.writeFileAsync(file, xml);
+            return [2 /*return*/];
+        });
+    });
+}
+exports.saveXml = saveXml;

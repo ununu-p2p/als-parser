@@ -35,38 +35,69 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var path_1 = __importDefault(require("path"));
 var reader_1 = require("./reader/reader");
+var fileref_1 = require("./fileref/fileref");
+var utils_1 = require("./utils");
 var AbletonParser = /** @class */ (function () {
     function AbletonParser(file) {
         this.file = file;
     }
     AbletonParser.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var reader, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        reader = new reader_1.Reader(this.file);
-                        _a = this;
-                        return [4 /*yield*/, reader.load()];
+                        this.reader = new reader_1.Reader(this.file);
+                        return [4 /*yield*/, this.reader.load()];
                     case 1:
-                        _a.xmlJs = _b.sent();
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
         });
     };
     AbletonParser.prototype.getTracks = function () {
-        return this.xmlJs.Ableton.LiveSet[0].Tracks;
+        return this.reader.xmlJs.Ableton.LiveSet[0].Tracks;
     };
     AbletonParser.prototype.getTracksCount = function () {
-        var rawTracks = this.xmlJs.Ableton.LiveSet[0].Tracks[0];
+        var rawTracks = this.reader.xmlJs.Ableton.LiveSet[0].Tracks[0];
         var trackCount = new Object();
         for (var trackGroup in rawTracks) {
             trackCount[trackGroup] = rawTracks[trackGroup].length;
         }
         return trackCount;
+    };
+    AbletonParser.prototype.getResourceLocations = function () {
+        var resList = new Set();
+        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendResourceList, resList);
+        return Array.from(resList);
+    };
+    AbletonParser.prototype.getFilerefs = function () {
+        var resList = new Set();
+        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendReferenceList, resList);
+        return Array.from(resList);
+    };
+    AbletonParser.prototype.appendReferenceList = function (obj, resList) {
+        resList.add(obj[0]);
+    };
+    AbletonParser.prototype.appendResourceList = function (obj, resList) {
+        var fileref = new fileref_1.Fileref(obj[0]);
+        resList.add(path_1.default.join('/', fileref.getLocation()));
+    };
+    AbletonParser.prototype.changeResourceLocations = function (location) {
+        // Modify the XmlJ
+        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.changeLocation, location, this.file);
+        // Save the Modified reader.xmlJs
+        this.reader.save(this.file);
+    };
+    AbletonParser.prototype.changeLocation = function (obj, resourceFolder, project) {
+        var fileref = new fileref_1.Fileref(obj[0]);
+        fileref.changeLocation(resourceFolder, project);
     };
     return AbletonParser;
 }());

@@ -52,9 +52,23 @@ var expect = chai_1.default.expect;
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
 var tmpDir = "./test/tmp2";
+var tmpDir2 = "./test/tmp3";
 // Sample file relative path to res dir
 var sampleAls = "sample-project/sample-project.als";
 var sampleXml = "sample-project/extracted.xml";
+var projectA = "resource-test/project/a.als";
+var projectB = "resource-test/project/b.als";
+// Resource List
+var resources = [
+    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/a/d/audio.aif',
+    '/Users/ama/Downloads/Reverb Default.adv',
+    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+];
+var modifiedResource = [
+    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/b/d/audio.aif',
+    '/Users/ama/Downloads/Reverb Default.adv',
+    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+];
 describe('Parser', function () {
     describe('Parse File', function () {
         // TODO: Put proper analytics to check how slow?
@@ -77,9 +91,19 @@ describe('Parser', function () {
                 });
             });
         });
-        it('Load when als project file is given', function (done) {
-            var parser = index_1.parseFile(path_1.default.join(tmpDir, sampleAls));
-            parser.should.eventually.have.deep.property('xmlJs', this.expectedXml).notify(done);
+        it('Load when als project file is given', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, sampleAls))];
+                        case 1:
+                            parser = _a.sent();
+                            parser.reader.xmlJs.should.eql(this.expectedXml);
+                            return [2 /*return*/];
+                    }
+                });
+            });
         });
         it('Get tracks count when als project file is given', function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -102,6 +126,51 @@ describe('Parser', function () {
         after(function () {
             // Cleanup after test
             fs_extra_1.remove(tmpDir);
+        });
+    });
+    // TODO: This test is not complete, Check issue #9 for further details
+    describe('Resource', function () {
+        before(function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            // Create a copy of the sample files.
+                            // This is important as the parser modifies the origional file.
+                            fs_extra_1.copySync(resDir, tmpDir2);
+                            _a = this;
+                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectA))];
+                        case 1:
+                            _a.parserA = _b.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        it('Get the list of resourcefiles when als project file is given', function () {
+            this.parserA.getResourceLocations().should.eql(resources);
+        });
+        it('Change location of all resourcefiles when als project file is given', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var newlocation, modifiedProject;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            newlocation = './test/res/resource-test/b/d/';
+                            this.parserA.changeResourceLocations(newlocation);
+                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectA))];
+                        case 1:
+                            modifiedProject = _a.sent();
+                            modifiedProject.getResourceLocations().should.eql(modifiedResource);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        after(function () {
+            // Cleanup after test
+            fs_extra_1.remove(tmpDir2);
         });
     });
 });

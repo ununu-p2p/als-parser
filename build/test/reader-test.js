@@ -53,6 +53,7 @@ var expect = chai_1.default.expect;
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
 var tmpDir = "./test/tmp";
+var tmpDir2 = "./test/tmp2";
 // Sample file relative path to res dir
 var sampleAls = "sample-project/sample-project.als";
 var sampleXml = "sample-project/extracted.xml";
@@ -98,6 +99,49 @@ describe('Reader', function () {
         after(function () {
             // Cleanup after test
             fs_extra_1.remove(tmpDir);
+        });
+    });
+    describe('Save Reader', function () {
+        before(function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            // Create a copy of the sample files.
+                            // This is important as the parser modifies the origional file.
+                            fs_extra_1.copySync(resDir, tmpDir2);
+                            this.reader = new reader_1.Reader(path_1.default.join(tmpDir2, sampleAls));
+                            return [4 /*yield*/, this.reader.load()];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        it('When a valid als file is given', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var newPath, newReader;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            newPath = path_1.default.join(tmpDir2, 'sample-project/saved.als');
+                            return [4 /*yield*/, this.reader.save(newPath)];
+                        case 1:
+                            _a.sent();
+                            newReader = new reader_1.Reader(newPath);
+                            return [4 /*yield*/, newReader.load()];
+                        case 2:
+                            _a.sent();
+                            newReader.xmlJs.should.eql(this.reader.xmlJs);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        after(function () {
+            // Cleanup after test
+            fs_extra_1.remove(tmpDir2);
         });
     });
 });
