@@ -1,6 +1,6 @@
 {
   "name": "ableton-parser",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A NodeJs based Ableton parser to parse ableton-live files(*als) ",
   "main": "build/lib/index.js",
   "types": "build/lib/index.d.js",
