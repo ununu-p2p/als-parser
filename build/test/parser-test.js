@@ -51,21 +51,22 @@ var expect = chai_1.default.expect;
 // Test resource directory
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
-var tmpDir = "./test/tmp2";
-var tmpDir2 = "./test/tmp3";
+var tmpDir = "/private/tmp/com.ununu.als-parser/dir0";
+var tmpDir2 = "/private/tmp/com.ununu.als-parser/dir1";
 // Sample file relative path to res dir
-var sampleAls = "sample-project/sample-project.als";
-var sampleXml = "sample-project/extracted.xml";
-var projectA = "resource-test/project/a.als";
-var projectB = "resource-test/project/b.als";
+var projectDir = "project/a Project/";
+var sampleAls = "a.als";
+var sampleXml = "a.xml";
 // Resource List
 var resources = [
-    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/a/d/audio.aif',
+    '/private/tmp/com.ununu.als-parser/a/d/drum.aif',
+    '/private/tmp/com.ununu.als-parser/a/d/audio.aif',
     '/Users/ama/Downloads/Reverb Default.adv',
     '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
 ];
 var modifiedResource = [
-    '/Users/shresthagrawal/Desktop/work/GitMusic/ableton-parser/test/res/resource-test/b/d/audio.aif',
+    '/private/tmp/com.ununu.als-parser/b/d/drum.aif',
+    '/private/tmp/com.ununu.als-parser/b/d/audio.aif',
     '/Users/ama/Downloads/Reverb Default.adv',
     '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
 ];
@@ -83,7 +84,7 @@ describe('Parser', function () {
                             // This is important as the parser modifies the origional file.
                             fs_extra_1.copySync(resDir, tmpDir);
                             _a = this;
-                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, sampleXml))];
+                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, projectDir, sampleXml))];
                         case 1:
                             _a.expectedXml = _b.sent();
                             return [2 /*return*/];
@@ -96,7 +97,7 @@ describe('Parser', function () {
                 var parser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, sampleAls))];
+                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, projectDir, sampleAls))];
                         case 1:
                             parser = _a.sent();
                             parser.reader.xmlJs.should.eql(this.expectedXml);
@@ -110,12 +111,11 @@ describe('Parser', function () {
                 var parser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, sampleAls))];
+                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, projectDir, sampleAls))];
                         case 1:
                             parser = _a.sent();
                             parser.getTracksCount().should.eql({
-                                MidiTrack: 1,
-                                AudioTrack: 1,
+                                AudioTrack: 2,
                                 ReturnTrack: 2
                             });
                             return [2 /*return*/];
@@ -140,7 +140,7 @@ describe('Parser', function () {
                             // This is important as the parser modifies the origional file.
                             fs_extra_1.copySync(resDir, tmpDir2);
                             _a = this;
-                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectA))];
+                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectDir, sampleAls))];
                         case 1:
                             _a.parserA = _b.sent();
                             return [2 /*return*/];
@@ -157,9 +157,9 @@ describe('Parser', function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            newlocation = './test/res/resource-test/b/d/';
+                            newlocation = "/private/tmp/com.ununu.als-parser/b/d/";
                             this.parserA.changeResourceLocations(newlocation);
-                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectA))];
+                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectDir, sampleAls))];
                         case 1:
                             modifiedProject = _a.sent();
                             modifiedProject.getResourceLocations().should.eql(modifiedResource);
