@@ -2,73 +2,81 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 import fileType from "file-type";
+import ReadableStream = NodeJS.ReadableStream;
+import WritableStream = NodeJS.WritableStream;
 
 export function copyFileAsync(src: string, dst: string): Promise<any> {
-	return new Promise((resolve, reject) => {
-		fs.copyFile(src, dst, (err) => {
-			if (err) reject(err);
-			resolve();
-		});
-	});
+  return new Promise((resolve, reject) => {
+    fs.copyFile(src, dst, err => {
+      if (err) reject(err);
+      resolve();
+    });
+  });
 }
 
-export function extractGz(src: string, dst: string): Promise<any> {
-	// check if src file exists
-	if (!fileExists(src)) {
-		throw new Error(
-			'Invalid File Doesnt Exist'
-		);
-	}
+export function gunzipInMemory(fileName: string): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const src = fs.createReadStream(fileName);
+      const tmp = src.pipe(zlib.createGunzip());
+      const chunks = [];
 
-	return new Promise((resolve, reject) => {
-		try {
-			// prepare streams
-			var source = fs.createReadStream(src);
-			var destination = fs.createWriteStream(dst);
-			// extract the archive
-			source.pipe(zlib.createGunzip()).pipe(destination);
-			// callback on extract completion
-			destination.on('close', resolve);
-		} catch (err) {
-			reject(err);
-		}
-	});
+      // read from gunzip stream into memory
+      for await (const chunk of tmp) {
+        chunks.push(chunk);
+      }
+      src.destroy();
+
+      // create buffer from chunks, write to file
+      const buffer = Buffer.concat(chunks);
+      fs.writeFile(fileName, buffer, err => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }
 
-// checks whether a file exists
+// checks whether a fileName exists
 export function fileExists(file: string): boolean {
-	try {
-		return fs.statSync(file).isFile();
-	} catch (err) {
-		return false;
-	}
+  try {
+    return fs.statSync(file).isFile();
+  } catch (err) {
+    return false;
+  }
 }
 
 export function readFileAsync(file: string): Promise<any> {
-	return new Promise((resolve, reject) => {
-		fs.readFile(file, function(err, data) {
-			if (err) reject(err);
-			resolve(data);
-		});
-	});
+  return new Promise((resolve, reject) => {
+    fs.readFile(file, function(err, data) {
+      if (err) reject(err);
+      resolve(data);
+    });
+  });
 }
 
 export function writeFileAsync(file: string, data: string): Promise<any> {
-	return new Promise((resolve, reject) => {
-		fs.writeFile(file, data, function(err) {
-			if (err) reject(err);
-			resolve();
-		});
-	});
+  return new Promise((resolve, reject) => {
+    fs.writeFile(file, data, function(err) {
+      if (err) reject(err);
+      resolve();
+    });
+  });
 }
 
 export function getType(file: string) {
-	return fileType.fromFile(file);
+  return fileType.fromFile(file);
 }
 
 export function changeExt(file: string, newExt: string) {
-	var parsePath = path.parse(file);
-	parsePath.ext = newExt;
-	parsePath.base = parsePath.base.substring(0, parsePath.base.lastIndexOf(".")) + newExt;
-	return path.format(parsePath);
+  var parsePath = path.parse(file);
+  parsePath.ext = newExt;
+  parsePath.base =
+    parsePath.base.substring(0, parsePath.base.lastIndexOf(".")) + newExt;
+  return path.format(parsePath);
 }

@@ -40,34 +40,31 @@ var utils_1 = require("./utils");
 var xml_1 = require("./xml");
 exports.INVALID_FILE = new Error("File type cannot be recognized");
 var Reader = /** @class */ (function () {
-    function Reader(file) {
-        this.file = file;
-        this.gzfile = utils_1.changeExt(this.file, ".gz");
+    function Reader(fileName) {
+        this.fileName = fileName;
     }
     Reader.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
             var fileType, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, utils_1.getType(this.file)];
+                    case 0: return [4 /*yield*/, utils_1.getType(this.fileName)];
                     case 1:
                         fileType = _b.sent();
-                        if (fileType === undefined)
+                        if (fileType === undefined ||
+                            (fileType.mime !== "application/xml" &&
+                                fileType.mime !== "application/gzip")) {
                             throw exports.INVALID_FILE;
-                        if (fileType.mime != "application/xml" && fileType.mime != "application/gzip")
-                            throw exports.INVALID_FILE;
-                        if (!(fileType.mime != "application/xml")) return [3 /*break*/, 4];
-                        return [4 /*yield*/, utils_1.copyFileAsync(this.file, this.gzfile)];
+                        }
+                        if (!(fileType.mime !== "application/xml")) return [3 /*break*/, 3];
+                        return [4 /*yield*/, utils_1.gunzipInMemory(this.fileName)];
                     case 2:
                         _b.sent();
-                        return [4 /*yield*/, utils_1.extractGz(this.gzfile, this.file)];
+                        _b.label = 3;
                     case 3:
-                        _b.sent();
-                        _b.label = 4;
-                    case 4:
                         _a = this;
-                        return [4 /*yield*/, xml_1.loadXml(this.file)];
-                    case 5:
+                        return [4 /*yield*/, xml_1.loadXml(this.fileName)];
+                    case 4:
                         _a.xmlJs = _b.sent();
                         return [2 /*return*/, this.xmlJs];
                 }

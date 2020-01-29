@@ -52,11 +52,11 @@ var expect = chai_1.default.expect;
 // Test resource directory
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
-var tmpDir = "./test/tmp";
-var tmpDir2 = "./test/tmp2";
-// Sample file relative path to res dir
-var sampleAls = "sample-project/sample-project.als";
-var sampleXml = "sample-project/extracted.xml";
+var tmpDir = "/private/tmp/com.ununu.als-parser/dir2";
+var tmpDir2 = "/private/tmp/com.ununu.als-parser/dir3";
+var projectDir = "project/a Project/";
+var sampleAls = "a.als";
+var sampleXml = "a.xml";
 var invalid_file = "invalid-file";
 describe('Reader', function () {
     describe('Load Reader', function () {
@@ -72,7 +72,7 @@ describe('Reader', function () {
                             // This is important as the parser modifies the origional file.
                             fs_extra_1.copySync(resDir, tmpDir);
                             _a = this;
-                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, sampleXml))];
+                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, projectDir, sampleXml))];
                         case 1:
                             _a.expectedXml = _b.sent();
                             return [2 /*return*/];
@@ -81,7 +81,7 @@ describe('Reader', function () {
             });
         });
         it('When the valid gzipped als is given', function (done) {
-            var reader = new reader_1.Reader(path_1.default.join(tmpDir, sampleAls));
+            var reader = new reader_1.Reader(path_1.default.join(tmpDir, projectDir, sampleAls));
             // eql is used instead of equal as the objects are not directly comparable
             reader.load().should.eventually.eql(this.expectedXml).notify(done);
         });
@@ -91,8 +91,8 @@ describe('Reader', function () {
         });
         it('When the valid extracted(xml) als is given', function (done) {
             // Create a copy of the extracted xml as .als
-            var tmpAls = utils_1.changeExt(path_1.default.join(tmpDir, sampleXml), '.als');
-            fs_extra_1.copySync(path_1.default.join(tmpDir, sampleXml), tmpAls);
+            var tmpAls = utils_1.changeExt(path_1.default.join(tmpDir, projectDir, sampleXml), '.als');
+            fs_extra_1.copySync(path_1.default.join(tmpDir, projectDir, sampleXml), tmpAls);
             var reader = new reader_1.Reader(tmpAls);
             reader.load().should.eventually.eql(this.expectedXml).notify(done);
         });
@@ -110,7 +110,7 @@ describe('Reader', function () {
                             // Create a copy of the sample files.
                             // This is important as the parser modifies the origional file.
                             fs_extra_1.copySync(resDir, tmpDir2);
-                            this.reader = new reader_1.Reader(path_1.default.join(tmpDir2, sampleAls));
+                            this.reader = new reader_1.Reader(path_1.default.join(tmpDir2, projectDir, sampleAls));
                             return [4 /*yield*/, this.reader.load()];
                         case 1:
                             _a.sent();
@@ -125,7 +125,7 @@ describe('Reader', function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            newPath = path_1.default.join(tmpDir2, 'sample-project/saved.als');
+                            newPath = path_1.default.join(tmpDir2, projectDir, 'saved.als');
                             return [4 /*yield*/, this.reader.save(newPath)];
                         case 1:
                             _a.sent();

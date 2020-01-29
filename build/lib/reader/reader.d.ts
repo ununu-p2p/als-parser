@@ -1,9 +1,8 @@
 export declare const INVALID_FILE: Error;
 export declare class Reader {
-    file: string;
-    gzfile: string;
+    fileName: string;
     xmlJs: any;
-    constructor(file: string);
+    constructor(fileName: string);
     load(): Promise<any>;
     save(file: string): Promise<void>;
 }
