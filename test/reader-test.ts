@@ -13,11 +13,8 @@ chai.use(chaiAsPromised);
 chai.should();
 const expect = chai.expect;
 
-// Test resource directory
-const resDir = "./test/res";
-// Tmp directory created as an exact copy of the res directory before test
+// temporary directory created as an exact copy of the res directory before test
 const tmpDir = "/private/tmp/com.ununu.als-parser";
-const tmpDir2 = "/private/tmp/com.ununu.als-parser/dir3";
 
 const projectDir = "project/a Project/";
 const sampleAls = "a.als";
@@ -85,26 +82,39 @@ describe("Reader", function() {
   });
 
   describe("Save Reader", function() {
-    before(async function() {
-      // Create a copy of the sample files.
-      // This is important as the parser modifies the origional file.
-      copySync(resDir, tmpDir2);
-      this.reader = new Reader(path.join(tmpDir2, projectDir, sampleAls));
+    beforeEach(async function() {
+      const mockVolume = new Volume();
+
+      mountDirectory(mockVolume, path.join(__dirname, "res"), {
+        dest: tmpDir,
+        recursively: true
+      });
+
+      /* FIXME: see `parser-test.ts` */
+      mountDirectory(
+          mockVolume,
+          path.join(__dirname, "../node_modules/xmlbuilder/lib")
+      );
+
+      this.unpatch = patchFs(mockVolume);
+
+      this.reader = new Reader(path.join(tmpDir, projectDir, sampleAls));
       await this.reader.load();
     });
 
+    afterEach(function() {
+      if (this.unpatch) {
+        this.unpatch();
+      }
+    });
+
     it("When a valid als file is given", async function() {
-      let newPath = path.join(tmpDir2, projectDir, "saved.als");
+      let newPath = path.join(tmpDir, projectDir, "saved.als");
       await this.reader.save(newPath);
       // Check if the saved  als is valid
       let newReader = new Reader(newPath);
       await newReader.load();
       newReader.xmlJs.should.eql(this.reader.xmlJs);
-    });
-
-    after(function() {
-      // Cleanup after test
-      remove(tmpDir2);
     });
   });
 });
