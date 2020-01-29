@@ -1,7 +1,7 @@
 {
   "name": "als-parser",
   "version": "1.1.0",
-  "description": "A NodeJs based Unoffical Als parser to parse ableton-live files(*als) ",
+  "description": "Unofficial parser for Ableton Live project files (.als)",
   "main": "build/lib/index.js",
   "types": "build/lib/index.d.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ununu-p2p/ableton-parser.git"
+    "url": "git+https://github.com/ununu-p2p/als-parser.git"
   },
   "keywords": [
     "ableton",
@@ -34,9 +34,9 @@
   "author": "Shresth Agrawal <shresthagrawal.31@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ununu-p2p/ableton-parser/issues"
+    "url": "https://github.com/ununu-p2p/als-parser/issues"
   },
-  "homepage": "https://github.com/ununu-p2p/ableton-parser#readme",
+  "homepage": "https://github.com/ununu-p2p/als-parser#readme",
   "devDependencies": {
     "@types/chai": "4.2.5",
     "@types/chai-as-promised": "7.1.2",
