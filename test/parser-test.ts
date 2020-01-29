@@ -2,13 +2,12 @@ import fs from "fs";
 import path from "path";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { copySync, remove } from "fs-extra";
 import { Volume } from "memfs";
 import { patchFs } from "fs-monkey";
+import { mountDirectory, mountFile } from "../lib/memory-fs";
 
 import { parseFile } from "../lib";
 import { loadXml } from "../lib/reader/xml";
-import { copyFileAsync } from "../lib/reader/utils";
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -41,30 +40,6 @@ const modifiedResource = [
   "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
 ];
 
-type MountOpts = {
-  dist?: string;
-  recursively?: boolean;
-};
-function mountDirectory(volume: any, src: string, opts: MountOpts = {}) {
-  const dist = opts.dist || src;
-  const recursively = opts.recursively || false;
-
-  volume.mkdirpSync(dist);
-  for (const file of fs.readdirSync(src)) {
-    const filePath = path.join(src, file);
-
-    if (fs.statSync(filePath).isFile()) {
-      const buf = fs.readFileSync(filePath);
-      volume.writeFileSync(path.join(dist, file), buf);
-    } else if (recursively && fs.statSync(filePath).isDirectory()) {
-      mountDirectory(volume, filePath, {
-        dist: path.join(dist, file),
-        recursively: true
-      });
-    }
-  }
-}
-
 describe("Parser", function() {
   describe("Parse File", function() {
     // TODO: Put proper analytics to check how slow?
@@ -74,7 +49,7 @@ describe("Parser", function() {
       const mockVolume = new Volume();
 
       mountDirectory(mockVolume, path.join(__dirname, "res"), {
-        dist: tmp,
+        dest: tmp,
         recursively: true
       });
 
@@ -96,9 +71,7 @@ describe("Parser", function() {
 
       this.unpatch = patchFs(mockVolume);
 
-      this.expectedXml = await loadXml(
-        path.join(tmp, projectDir, sampleXml)
-      );
+      this.expectedXml = await loadXml(path.join(tmp, projectDir, sampleXml));
     });
 
     afterEach(function() {
@@ -126,16 +99,15 @@ describe("Parser", function() {
       const mockVolume = new Volume();
 
       mountDirectory(mockVolume, path.join(__dirname, "res/a/d"), {
-        dist: path.join(tmp, "/a/d")
+        dest: path.join(tmp, "/a/d")
       });
       mountDirectory(mockVolume, path.join(__dirname, "res/a/d"), {
-        dist: path.join(tmp, "/b/d")
+        dest: path.join(tmp, "/b/d")
       });
-
-      mockVolume.mkdirpSync(`/foo`);
-      mockVolume.writeFileSync(
-        "/foo/project.als",
-        fs.readFileSync(path.join(__dirname, "res/project/a Project/a.als"))
+      mountFile(
+        mockVolume,
+        path.join(__dirname, "res/project/a Project/a.als"),
+        "/foo/project.als"
       );
 
       // FIXME: same as above
