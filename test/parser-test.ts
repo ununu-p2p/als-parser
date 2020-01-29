@@ -17,6 +17,7 @@ const expect = chai.expect;
 // Test resource directory
 const resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
+const tmp = "/private/tmp/com.ununu.als-parser";
 const tmpDir = "/private/tmp/com.ununu.als-parser/dir0";
 const tmpDir2 = "/private/tmp/com.ununu.als-parser/dir1";
 
@@ -40,14 +41,26 @@ const modifiedResource = [
   "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
 ];
 
-function mountDirectory(volume: any, dir: string) {
-  volume.mkdirpSync(dir);
-  for (const file of fs.readdirSync(dir)) {
-    const filePath = path.join(dir, file);
+type MountOpts = {
+  dist?: string;
+  recursively?: boolean;
+};
+function mountDirectory(volume: any, src: string, opts: MountOpts = {}) {
+  const dist = opts.dist || src;
+  const recursively = opts.recursively || false;
+
+  volume.mkdirpSync(dist);
+  for (const file of fs.readdirSync(src)) {
+    const filePath = path.join(src, file);
 
     if (fs.statSync(filePath).isFile()) {
       const buf = fs.readFileSync(filePath);
-      volume.writeFileSync(filePath, buf);
+      volume.writeFileSync(path.join(dist, file), buf);
+    } else if (recursively && fs.statSync(filePath).isDirectory()) {
+      mountDirectory(volume, filePath, {
+        dist: path.join(dist, file),
+        recursively: true
+      });
     }
   }
 }
@@ -56,64 +69,20 @@ describe("Parser", function() {
   describe("Parse File", function() {
     // TODO: Put proper analytics to check how slow?
     this.slow(100);
-    before(async function() {
-      // Create a copy of the sample files.
-      // This is important as the parser modifies the origional file.
-      copySync(resDir, tmpDir);
-      this.expectedXml = await loadXml(
-        path.join(tmpDir, projectDir, sampleXml)
-      );
-    });
-
-    it("Load when als project file is given", async function() {
-      let parser = await parseFile(path.join(tmpDir, projectDir, sampleAls));
-      parser.reader.xmlJs.should.eql(this.expectedXml);
-    });
-
-    it("Get tracks count when als project file is given", async function() {
-      let parser = await parseFile(path.join(tmpDir, projectDir, sampleAls));
-      parser.getTracksCount().should.eql({
-        AudioTrack: 2,
-        ReturnTrack: 2
-      });
-    });
-
-    after(function() {
-      // Cleanup after test
-      remove(tmpDir);
-    });
-  });
-
-  describe("Resource", function() {
-    before(function() {
-      this.unpatch = () => {};
-
-      this.drumSample = fs.readFileSync(
-        path.join(__dirname, "res/a/d/drum.aif")
-      );
-      this.audioSample = fs.readFileSync(
-        path.join(__dirname, "res/a/d/audio.aif")
-      );
-      this.projectFile = fs.readFileSync(
-        path.join(__dirname, "res/project/a Project/a.als")
-      );
-    });
 
     beforeEach(async function() {
-      const tmp = "/private/tmp/com.ununu.als-parser";
       const mockVolume = new Volume();
 
-      mockVolume.mkdirpSync(`${tmp}/a/d`);
-      mockVolume.mkdirpSync(`${tmp}/b/d`);
+      mountDirectory(mockVolume, path.join(__dirname, "res"), {
+        dist: tmp,
+        recursively: true
+      });
+
       mockVolume.mkdirpSync(`/foo`);
-
-      mockVolume.writeFileSync(`${tmp}/a/d/audio.aif`, this.audioSample);
-      mockVolume.writeFileSync(`${tmp}/a/d/drum.aif`, this.drumSample);
-
-      mockVolume.writeFileSync(`${tmp}/b/d/audio.aif`, this.audioSample);
-      mockVolume.writeFileSync(`${tmp}/b/d/drum.aif`, this.drumSample);
-
-      mockVolume.writeFileSync("/foo/project.als", this.projectFile);
+      mockVolume.writeFileSync(
+        "/foo/project.als",
+        fs.readFileSync(path.join(__dirname, "res/project/a Project/a.als"))
+      );
 
       /* FIXME: this is a very bad practice – pseudo-mounting some of our
        * dependencies. however, as xml2js and xmlbuilder are fundamentally
@@ -126,10 +95,62 @@ describe("Parser", function() {
       );
 
       this.unpatch = patchFs(mockVolume);
+
+      this.expectedXml = await loadXml(
+        path.join(tmp, projectDir, sampleXml)
+      );
     });
 
     afterEach(function() {
-      this.unpatch();
+      if (this.unpatch) {
+        this.unpatch();
+      }
+    });
+
+    it("Load when als project file is given", async function() {
+      let parser = await parseFile("/foo/project.als");
+      parser.reader.xmlJs.should.eql(this.expectedXml);
+    });
+
+    it("Get tracks count when als project file is given", async function() {
+      let parser = await parseFile("/foo/project.als");
+      parser.getTracksCount().should.eql({
+        AudioTrack: 2,
+        ReturnTrack: 2
+      });
+    });
+  });
+
+  describe("Resource", function() {
+    beforeEach(async function() {
+      const mockVolume = new Volume();
+
+      mountDirectory(mockVolume, path.join(__dirname, "res/a/d"), {
+        dist: path.join(tmp, "/a/d")
+      });
+      mountDirectory(mockVolume, path.join(__dirname, "res/a/d"), {
+        dist: path.join(tmp, "/b/d")
+      });
+
+      mockVolume.mkdirpSync(`/foo`);
+      mockVolume.writeFileSync(
+        "/foo/project.als",
+        fs.readFileSync(path.join(__dirname, "res/project/a Project/a.als"))
+      );
+
+      // FIXME: same as above
+      mountDirectory(
+        mockVolume,
+        path.join(__dirname, "../node_modules/xmlbuilder/lib")
+      );
+
+      this.unpatch = patchFs(mockVolume);
+    });
+
+    afterEach(function() {
+      if (this.unpatch) {
+        this.unpatch();
+      }
     });
 
     it("Get the list of resourcefiles when als project file is given", async function() {
