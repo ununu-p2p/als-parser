@@ -15,6 +15,12 @@ export function copyFileAsync(src: string, dst: string): Promise<any> {
 }
 
 export function gunzipInMemory(fileName: string): Promise<void> {
+  if (!fileExists(fileName)) {
+    throw new Error(
+        'Invalid File Doesnt Exist'
+    );
+  }
+  
   return new Promise(async (resolve, reject) => {
     try {
       const src = fs.createReadStream(fileName);
