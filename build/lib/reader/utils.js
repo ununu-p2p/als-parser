@@ -62,6 +62,9 @@ function copyFileAsync(src, dst) {
 exports.copyFileAsync = copyFileAsync;
 function gunzipInMemory(fileName) {
     var _this = this;
+    if (!fileExists(fileName)) {
+        throw new Error('Invalid File Doesnt Exist');
+    }
     return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
         var src, tmp, chunks, tmp_1, tmp_1_1, chunk, e_1_1, buffer, err_1;
         var e_1, _a;

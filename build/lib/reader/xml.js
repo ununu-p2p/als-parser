@@ -35,20 +35,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var xml2js_1 = require("xml2js");
+var fs_1 = __importDefault(require("fs"));
 var utils_1 = require("./utils");
 function loadXml(file) {
     return __awaiter(this, void 0, void 0, function () {
-        var parser, raw_xml;
+        var parser, rawXml;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     parser = new xml2js_1.Parser();
                     return [4 /*yield*/, utils_1.readFileAsync(file)];
                 case 1:
-                    raw_xml = _a.sent();
-                    return [2 /*return*/, parser.parseStringPromise(raw_xml)];
+                    rawXml = _a.sent();
+                    return [2 /*return*/, parser.parseStringPromise(rawXml)];
             }
         });
     });
@@ -56,12 +60,23 @@ function loadXml(file) {
 exports.loadXml = loadXml;
 function saveXml(file, obj) {
     return __awaiter(this, void 0, void 0, function () {
-        var builder, xml;
+        var builder, xml, eXml;
         return __generator(this, function (_a) {
-            builder = new xml2js_1.Builder();
-            xml = builder.buildObject(obj);
-            utils_1.writeFileAsync(file, xml);
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0:
+                    builder = new xml2js_1.Builder();
+                    xml = builder.buildObject(obj);
+                    if (!fs_1.default.existsSync(file)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, utils_1.readFileAsync(file)];
+                case 1:
+                    eXml = _a.sent();
+                    if (eXml == xml)
+                        return [2 /*return*/];
+                    _a.label = 2;
+                case 2:
+                    utils_1.writeFileAsync(file, xml);
+                    return [2 /*return*/];
+            }
         });
     });
 }

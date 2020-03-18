@@ -39,18 +39,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var fs_1 = __importDefault(require("fs"));
+var path_1 = __importDefault(require("path"));
 var chai_1 = __importDefault(require("chai"));
 var chai_as_promised_1 = __importDefault(require("chai-as-promised"));
-var index_1 = require("../lib/index");
+var memfs_1 = require("memfs");
+var fs_monkey_1 = require("fs-monkey");
+var memory_fs_1 = require("../lib/memory-fs");
+var lib_1 = require("../lib");
 var xml_1 = require("../lib/reader/xml");
-var fs_extra_1 = require("fs-extra");
-var path_1 = __importDefault(require("path"));
 chai_1.default.use(chai_as_promised_1.default);
 chai_1.default.should();
 var expect = chai_1.default.expect;
 // Test resource directory
 var resDir = "./test/res";
 // Tmp directory created as an exact copy of the res directory before test
+var tmp = "/private/tmp/com.ununu.als-parser";
 var tmpDir = "/private/tmp/com.ununu.als-parser/dir0";
 var tmpDir2 = "/private/tmp/com.ununu.als-parser/dir1";
 // Sample file relative path to res dir
@@ -59,32 +63,43 @@ var sampleAls = "a.als";
 var sampleXml = "a.xml";
 // Resource List
 var resources = [
-    '/private/tmp/com.ununu.als-parser/a/d/drum.aif',
-    '/private/tmp/com.ununu.als-parser/a/d/audio.aif',
-    '/Users/ama/Downloads/Reverb Default.adv',
-    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+    "/private/tmp/com.ununu.als-parser/a/d/drum.aif",
+    "/private/tmp/com.ununu.als-parser/a/d/audio.aif",
+    "/Users/ama/Downloads/Reverb Default.adv",
+    "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
 ];
 var modifiedResource = [
-    '/private/tmp/com.ununu.als-parser/b/d/drum.aif',
-    '/private/tmp/com.ununu.als-parser/b/d/audio.aif',
-    '/Users/ama/Downloads/Reverb Default.adv',
-    '/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv'
+    "/private/tmp/com.ununu.als-parser/b/d/drum.aif",
+    "/private/tmp/com.ununu.als-parser/b/d/audio.aif",
+    "/Users/ama/Downloads/Reverb Default.adv",
+    "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
 ];
-describe('Parser', function () {
-    describe('Parse File', function () {
+describe("Parser", function () {
+    describe("Parse File", function () {
         // TODO: Put proper analytics to check how slow?
         this.slow(100);
-        before(function () {
+        beforeEach(function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _a;
+                var mockVolume, _a;
                 return __generator(this, function (_b) {
                     switch (_b.label) {
                         case 0:
-                            // Create a copy of the sample files.
-                            // This is important as the parser modifies the origional file.
-                            fs_extra_1.copySync(resDir, tmpDir);
+                            mockVolume = new memfs_1.Volume();
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res"), {
+                                dest: tmp,
+                                recursively: true
+                            });
+                            mockVolume.mkdirpSync("/foo");
+                            mockVolume.writeFileSync("/foo/project.als", fs_1.default.readFileSync(path_1.default.join(__dirname, "res/project/a Project/a.als")));
+                            /* FIXME: this is a very bad practice – pseudo-mounting some of our
+                             * dependencies. however, as xml2js and xmlbuilder are fundamentally
+                             * flawed node modules, they load modules during runtime and require
+                             * a real-mounted fs
+                             */
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "../node_modules/xmlbuilder/lib"));
+                            this.unpatch = fs_monkey_1.patchFs(mockVolume);
                             _a = this;
-                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, projectDir, sampleXml))];
+                            return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmp, projectDir, sampleXml))];
                         case 1:
                             _a.expectedXml = _b.sent();
                             return [2 /*return*/];
@@ -92,12 +107,17 @@ describe('Parser', function () {
                 });
             });
         });
-        it('Load when als project file is given', function () {
+        afterEach(function () {
+            if (this.unpatch) {
+                this.unpatch();
+            }
+        });
+        it("Load when als project file is given", function () {
             return __awaiter(this, void 0, void 0, function () {
                 var parser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, projectDir, sampleAls))];
+                        case 0: return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 1:
                             parser = _a.sent();
                             parser.reader.xmlJs.should.eql(this.expectedXml);
@@ -106,12 +126,12 @@ describe('Parser', function () {
                 });
             });
         });
-        it('Get tracks count when als project file is given', function () {
+        it("Get tracks count when als project file is given", function () {
             return __awaiter(this, void 0, void 0, function () {
                 var parser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir, projectDir, sampleAls))];
+                        case 0: return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 1:
                             parser = _a.sent();
                             parser.getTracksCount().should.eql({
@@ -123,54 +143,65 @@ describe('Parser', function () {
                 });
             });
         });
-        after(function () {
-            // Cleanup after test
-            fs_extra_1.remove(tmpDir);
-        });
     });
-    // TODO: This test is not complete, Check issue #9 for further details
-    describe('Resource', function () {
-        before(function () {
+    describe("Resource", function () {
+        beforeEach(function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _a;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            // Create a copy of the sample files.
-                            // This is important as the parser modifies the origional file.
-                            fs_extra_1.copySync(resDir, tmpDir2);
-                            _a = this;
-                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectDir, sampleAls))];
+                var mockVolume;
+                return __generator(this, function (_a) {
+                    mockVolume = new memfs_1.Volume();
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res/a/d"), {
+                        dest: path_1.default.join(tmp, "/a/d")
+                    });
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res/a/d"), {
+                        dest: path_1.default.join(tmp, "/b/d")
+                    });
+                    memory_fs_1.mountFile(mockVolume, path_1.default.join(__dirname, "res/project/a Project/a.als"), "/foo/project.als");
+                    // FIXME: same as above
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "../node_modules/xmlbuilder/lib"));
+                    this.unpatch = fs_monkey_1.patchFs(mockVolume);
+                    return [2 /*return*/];
+                });
+            });
+        });
+        afterEach(function () {
+            if (this.unpatch) {
+                this.unpatch();
+            }
+        });
+        it("Get the list of resourcefiles when als project file is given", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 1:
-                            _a.parserA = _b.sent();
+                            parser = _a.sent();
+                            parser.getResourceLocations().should.eql(resources);
                             return [2 /*return*/];
                     }
                 });
             });
         });
-        it('Get the list of resourcefiles when als project file is given', function () {
-            this.parserA.getResourceLocations().should.eql(resources);
-        });
-        it('Change location of all resourcefiles when als project file is given', function () {
+        it("Change location of all resourcefiles when als project file is given", function () {
             return __awaiter(this, void 0, void 0, function () {
-                var newlocation, modifiedProject;
+                var newLocation, parser, secondParser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            newlocation = "/private/tmp/com.ununu.als-parser/b/d/";
-                            this.parserA.changeResourceLocations(newlocation);
-                            return [4 /*yield*/, index_1.parseFile(path_1.default.join(tmpDir2, projectDir, sampleAls))];
+                            newLocation = "/private/tmp/com.ununu.als-parser/b/d/";
+                            return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 1:
-                            modifiedProject = _a.sent();
-                            modifiedProject.getResourceLocations().should.eql(modifiedResource);
+                            parser = _a.sent();
+                            parser.changeResourceLocations(newLocation);
+                            return [4 /*yield*/, lib_1.parseFile(path_1.default.join("/foo/project.als"))];
+                        case 2:
+                            secondParser = _a.sent();
+                            secondParser.getResourceLocations().should.eql(modifiedResource);
                             return [2 /*return*/];
                     }
                 });
             });
-        });
-        after(function () {
-            // Cleanup after test
-            fs_extra_1.remove(tmpDir2);
         });
     });
 });

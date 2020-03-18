@@ -44,33 +44,38 @@ var chai_as_promised_1 = __importDefault(require("chai-as-promised"));
 var reader_1 = require("../lib/reader/reader");
 var utils_1 = require("../lib/reader/utils");
 var xml_1 = require("../lib/reader/xml");
-var fs_extra_1 = require("fs-extra");
 var path_1 = __importDefault(require("path"));
+var memfs_1 = require("memfs");
+var memory_fs_1 = require("../lib/memory-fs");
+var fs_monkey_1 = require("fs-monkey");
+var fs_1 = __importDefault(require("fs"));
 chai_1.default.use(chai_as_promised_1.default);
 chai_1.default.should();
 var expect = chai_1.default.expect;
-// Test resource directory
-var resDir = "./test/res";
-// Tmp directory created as an exact copy of the res directory before test
-var tmpDir = "/private/tmp/com.ununu.als-parser/dir2";
-var tmpDir2 = "/private/tmp/com.ununu.als-parser/dir3";
+// temporary directory created as an exact copy of the res directory before test
+var tmpDir = "/private/tmp/com.ununu.als-parser";
 var projectDir = "project/a Project/";
 var sampleAls = "a.als";
 var sampleXml = "a.xml";
 var invalid_file = "invalid-file";
-describe('Reader', function () {
-    describe('Load Reader', function () {
+describe("Reader", function () {
+    describe("Load Reader", function () {
         // TODO: Put proper analytics to check how slow?
         this.slow(100);
-        before(function () {
+        beforeEach(function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _a;
+                var mockVolume, _a;
                 return __generator(this, function (_b) {
                     switch (_b.label) {
                         case 0:
-                            // Create a copy of the sample files.
-                            // This is important as the parser modifies the origional file.
-                            fs_extra_1.copySync(resDir, tmpDir);
+                            mockVolume = new memfs_1.Volume();
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res"), {
+                                dest: tmpDir,
+                                recursively: true
+                            });
+                            /* FIXME: see `parser-test.ts` */
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "../node_modules/xmlbuilder/lib"));
+                            this.unpatch = fs_monkey_1.patchFs(mockVolume);
                             _a = this;
                             return [4 /*yield*/, xml_1.loadXml(path_1.default.join(tmpDir, projectDir, sampleXml))];
                         case 1:
@@ -80,37 +85,53 @@ describe('Reader', function () {
                 });
             });
         });
-        it('When the valid gzipped als is given', function (done) {
+        afterEach(function () {
+            if (this.unpatch) {
+                this.unpatch();
+            }
+        });
+        it("When the valid gzipped als is given", function (done) {
             var reader = new reader_1.Reader(path_1.default.join(tmpDir, projectDir, sampleAls));
             // eql is used instead of equal as the objects are not directly comparable
-            reader.load().should.eventually.eql(this.expectedXml).notify(done);
+            reader
+                .load()
+                .should.eventually.eql(this.expectedXml)
+                .notify(done);
         });
-        it('When the invalid file type is given', function (done) {
+        it("When the invalid file type is given", function (done) {
             var reader = new reader_1.Reader(path_1.default.join(tmpDir, invalid_file));
-            reader.load().should.eventually.rejectedWith(reader_1.INVALID_FILE).notify(done);
+            reader
+                .load()
+                .should.eventually.rejectedWith(reader_1.INVALID_FILE)
+                .notify(done);
         });
-        it('When the valid extracted(xml) als is given', function (done) {
+        it("When the valid extracted(xml) als is given", function (done) {
             // Create a copy of the extracted xml as .als
-            var tmpAls = utils_1.changeExt(path_1.default.join(tmpDir, projectDir, sampleXml), '.als');
-            fs_extra_1.copySync(path_1.default.join(tmpDir, projectDir, sampleXml), tmpAls);
+            var tmpAls = utils_1.changeExt(path_1.default.join(tmpDir, projectDir, sampleXml), ".als");
+            fs_1.default.copyFileSync(path_1.default.join(tmpDir, projectDir, sampleXml), tmpAls);
             var reader = new reader_1.Reader(tmpAls);
-            reader.load().should.eventually.eql(this.expectedXml).notify(done);
-        });
-        after(function () {
-            // Cleanup after test
-            fs_extra_1.remove(tmpDir);
+            reader
+                .load()
+                .should.eventually.eql(this.expectedXml)
+                .notify(done);
         });
     });
-    describe('Save Reader', function () {
-        before(function () {
+    describe("Save Reader", function () {
+        beforeEach(function () {
             return __awaiter(this, void 0, void 0, function () {
+                var mockVolume;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            // Create a copy of the sample files.
-                            // This is important as the parser modifies the origional file.
-                            fs_extra_1.copySync(resDir, tmpDir2);
-                            this.reader = new reader_1.Reader(path_1.default.join(tmpDir2, projectDir, sampleAls));
+                            mockVolume = new memfs_1.Volume();
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res"), {
+                                dest: tmpDir,
+                                recursively: true
+                            });
+                            /* FIXME: see `parser-test.ts` */
+                            memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "../node_modules/xmlbuilder/lib"));
+                            this.unpatch = fs_monkey_1.patchFs(mockVolume);
+                            this.reader = new reader_1.Reader(path_1.default.join(tmpDir, projectDir, sampleAls));
                             return [4 /*yield*/, this.reader.load()];
                         case 1:
                             _a.sent();
@@ -119,13 +140,18 @@ describe('Reader', function () {
                 });
             });
         });
-        it('When a valid als file is given', function () {
+        afterEach(function () {
+            if (this.unpatch) {
+                this.unpatch();
+            }
+        });
+        it("When a valid als file is given", function () {
             return __awaiter(this, void 0, void 0, function () {
                 var newPath, newReader;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            newPath = path_1.default.join(tmpDir2, projectDir, 'saved.als');
+                            newPath = path_1.default.join(tmpDir, projectDir, "saved.als");
                             return [4 /*yield*/, this.reader.save(newPath)];
                         case 1:
                             _a.sent();
@@ -138,10 +164,6 @@ describe('Reader', function () {
                     }
                 });
             });
-        });
-        after(function () {
-            // Cleanup after test
-            fs_extra_1.remove(tmpDir2);
         });
     });
 });
