@@ -1,15 +1,17 @@
 export declare class FilerefData {
     header: string;
-    systemName: string;
+    diskName: string;
     location: string;
     footer: string;
-    constructor(header: string, systemName: string, location: string, footer: string);
+    external: boolean;
+    constructor(header: string, diskName: string, location: string, footer: string, external: boolean);
     getFileName(): string;
     getDir(): string;
     getLocation(delminator: string): string;
-    getSystemName(): string;
+    getDiskName(): string;
     getHeader(): string;
     getFooter(): string;
+    isExternal(): boolean;
     setLocation(location: string): void;
 }
 export declare function unmarshall(stream: string): FilerefData;

@@ -3,14 +3,17 @@ import { ascii2hex, hex2ascii, hex2dec, dec2hex, lenPad, replaceAt } from "./uti
 
 export class FilerefData {
     header: string;
-    systemName: string;
+    diskName: string;
     location: string;
     footer: string;
-    constructor(header: string, systemName: string, location: string, footer: string) {
+    external: boolean;
+    constructor(header: string, diskName: string, location: string,
+                footer: string, external: boolean) {
         this.header = header;
-        this.systemName = systemName;
+        this.diskName = diskName;
         this.location = location;
         this.footer = footer;
+        this.external = external;
     }
     getFileName() {
         return path.parse(this.location).base;
@@ -21,14 +24,17 @@ export class FilerefData {
     getLocation(delminator: string) {
         return this.location.split(path.sep).join(delminator);
     }
-    getSystemName() {
-        return this.systemName;
+    getDiskName() {
+        return this.diskName;
     }
     getHeader() {
         return this.header;
     }
     getFooter() {
         return this.footer;
+    }
+    isExternal() {
+        return this.external;
     }
     setLocation(location: string) {
         // Store the absolute location but donot have the deliminator in the start
@@ -86,7 +92,7 @@ export function unmarshall(stream: string) {
     let systemNameLength = hex2dec(stream.substr(cntr, 2));
     cntr += 4;
     // Name length with each char with 2 padding
-    let systemName = hex2ascii(stream.substr(cntr, systemNameLength * 4));
+    let diskName = hex2ascii(stream.substr(cntr, systemNameLength * 4));
     cntr += systemNameLength * 4;
 
     // Next 4 control code
@@ -103,7 +109,7 @@ export function unmarshall(stream: string) {
     // Next 4 control code
     if(stream.substr(cntr, 4) != '1300') throw Error("Data of the ref cannot be recognised: 1300");
     let footer = stream.substr(cntr);
-    return new FilerefData(header, systemName, location, footer);
+    return new FilerefData(header, diskName, location, footer, false);
 }
 
 export function marshall(data: FilerefData) {
@@ -124,9 +130,9 @@ export function marshall(data: FilerefData) {
     // Control Code
     stream += '0F00';
     // length of the system name with padding and length header (12*2 + 2 = 26), 2 padding
-    stream += dec2hex((data.getSystemName().length * 2) + 2) + '00';
-    stream += dec2hex(data.getSystemName().length) + '00';
-    stream += ascii2hex(data.getSystemName().split('').join('\0')) + '00';
+    stream += dec2hex((data.getDiskName().length * 2) + 2) + '00';
+    stream += dec2hex(data.getDiskName().length) + '00';
+    stream += ascii2hex(data.getDiskName().split('').join('\0')) + '00';
     // Control Code
     stream += '1200';
     stream += dec2hex(data.getLocation('/').length);

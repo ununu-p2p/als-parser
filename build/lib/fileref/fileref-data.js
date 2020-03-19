@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __importDefault(require("path"));
 var utils_1 = require("./utils");
 var FilerefData = /** @class */ (function () {
-    function FilerefData(header, systemName, location, footer) {
+    function FilerefData(header, diskName, location, footer, external) {
         this.header = header;
-        this.systemName = systemName;
+        this.diskName = diskName;
         this.location = location;
         this.footer = footer;
+        this.external = external;
     }
     FilerefData.prototype.getFileName = function () {
         return path_1.default.parse(this.location).base;
@@ -21,14 +22,17 @@ var FilerefData = /** @class */ (function () {
     FilerefData.prototype.getLocation = function (delminator) {
         return this.location.split(path_1.default.sep).join(delminator);
     };
-    FilerefData.prototype.getSystemName = function () {
-        return this.systemName;
+    FilerefData.prototype.getDiskName = function () {
+        return this.diskName;
     };
     FilerefData.prototype.getHeader = function () {
         return this.header;
     };
     FilerefData.prototype.getFooter = function () {
         return this.footer;
+    };
+    FilerefData.prototype.isExternal = function () {
+        return this.external;
     };
     FilerefData.prototype.setLocation = function (location) {
         // Store the absolute location but donot have the deliminator in the start
@@ -89,7 +93,7 @@ function unmarshall(stream) {
     var systemNameLength = utils_1.hex2dec(stream.substr(cntr, 2));
     cntr += 4;
     // Name length with each char with 2 padding
-    var systemName = utils_1.hex2ascii(stream.substr(cntr, systemNameLength * 4));
+    var diskName = utils_1.hex2ascii(stream.substr(cntr, systemNameLength * 4));
     cntr += systemNameLength * 4;
     // Next 4 control code
     if (stream.substr(cntr, 4) != '1200')
@@ -106,7 +110,7 @@ function unmarshall(stream) {
     if (stream.substr(cntr, 4) != '1300')
         throw Error("Data of the ref cannot be recognised: 1300");
     var footer = stream.substr(cntr);
-    return new FilerefData(header, systemName, location, footer);
+    return new FilerefData(header, diskName, location, footer, false);
 }
 exports.unmarshall = unmarshall;
 function marshall(data) {
@@ -127,9 +131,9 @@ function marshall(data) {
     // Control Code
     stream += '0F00';
     // length of the system name with padding and length header (12*2 + 2 = 26), 2 padding
-    stream += utils_1.dec2hex((data.getSystemName().length * 2) + 2) + '00';
-    stream += utils_1.dec2hex(data.getSystemName().length) + '00';
-    stream += utils_1.ascii2hex(data.getSystemName().split('').join('\0')) + '00';
+    stream += utils_1.dec2hex((data.getDiskName().length * 2) + 2) + '00';
+    stream += utils_1.dec2hex(data.getDiskName().length) + '00';
+    stream += utils_1.ascii2hex(data.getDiskName().split('').join('\0')) + '00';
     // Control Code
     stream += '1200';
     stream += utils_1.dec2hex(data.getLocation('/').length);
