@@ -88,17 +88,17 @@ export function unmarshall(stream: string) {
     cntr += 4;
     // Length of total sytem name length blob, 2 padding
     cntr += 4;
-    // length of system name string, 2 padding
-    let systemNameLength = hex2dec(stream.substr(cntr, 2));
+    // length of disk name string, 2 padding
+    let diskNameLength = hex2dec(stream.substr(cntr, 2));
     cntr += 4;
     // Name length with each char with 2 padding
-    let diskName = hex2ascii(stream.substr(cntr, systemNameLength * 4));
-    cntr += systemNameLength * 4;
+    let diskName = hex2ascii(stream.substr(cntr, diskNameLength * 4));
+    cntr += diskNameLength * 4;
 
     // Next 4 control code
     if(stream.substr(cntr, 4) != '1200') throw Error("Data of the ref cannot be recognised: 1200");
     cntr += 4;
-    // length of system name string
+    // length of disk name string
     locationLength = hex2dec(stream.substr(cntr, 2));
     cntr += 2;
     // Name length with each char with 2 padding
@@ -108,8 +108,15 @@ export function unmarshall(stream: string) {
 
     // Next 4 control code
     if(stream.substr(cntr, 4) != '1300') throw Error("Data of the ref cannot be recognised: 1300");
+    // TODO: The footer would go down
     let footer = stream.substr(cntr);
-    return new FilerefData(header, diskName, location, footer, false);
+    cntr += 4;
+    let diskLocationLength = hex2dec(stream.substr(cntr, 2));
+    cntr += 2;
+    let diskLocation = hex2ascii(stream.substr(cntr, diskLocationLength * 2));
+    // TODO: Not sure if this works with windowss
+    let isExternal = diskLocation != '/';
+    return new FilerefData(header, diskName, path.join(diskLocation, location), footer, isExternal);
 }
 
 export function marshall(data: FilerefData) {
@@ -129,7 +136,7 @@ export function marshall(data: FilerefData) {
     stream += ascii2hex(data.getFileName().split('').join('\0')) + '00';
     // Control Code
     stream += '0F00';
-    // length of the system name with padding and length header (12*2 + 2 = 26), 2 padding
+    // length of the disk name with padding and length header (12*2 + 2 = 26), 2 padding
     stream += dec2hex((data.getDiskName().length * 2) + 2) + '00';
     stream += dec2hex(data.getDiskName().length) + '00';
     stream += ascii2hex(data.getDiskName().split('').join('\0')) + '00';

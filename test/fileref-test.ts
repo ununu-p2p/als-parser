@@ -54,7 +54,7 @@ const hex = "48656C6C6F20576F726C6421313233344023";
 const ascii = "Hello World!1234@#";
 
 // Test resource directory
-const tmpDir = "private/tmp/com.ununu.als-parser/";
+const tmpDir = "/private/tmp/com.ununu.als-parser/";
 
 describe('FilerefData', function() {
     describe ('Utils', function() {
