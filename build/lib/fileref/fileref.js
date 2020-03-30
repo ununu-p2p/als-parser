@@ -9,13 +9,14 @@ var utils_1 = require("./../reader/utils");
 var Fileref = /** @class */ (function () {
     function Fileref(fileref) {
         this.fileref = fileref;
-        var hex = fileref.Data[0].replace(/\n/g, '').replace(/\t/g, '');
+        var hex = fileref.Data[0].replace(/\n/g, '').replace(/\t/g, '').replace(/ /g, '');
         this.data = fileref_data_1.unmarshall(hex);
     }
     Fileref.prototype.getLocation = function () {
         return this.data.getLocation('/');
     };
-    Fileref.prototype.changeLocation = function (resourceFolder, project) {
+    Fileref.prototype.changeLocation = function (resourceFolder, project, overrideFileCheck) {
+        if (overrideFileCheck === void 0) { overrideFileCheck = false; }
         // Get the absolute path of the objects
         resourceFolder = path_1.default.resolve(resourceFolder);
         project = path_1.default.resolve(project);
@@ -23,7 +24,7 @@ var Fileref = /** @class */ (function () {
         var resource = path_1.default.join(resourceFolder, this.data.getFileName());
         // Verify if the location Exists
         // TODO: Throw Error on resource doesn't exist
-        if (!utils_1.fileExists(resource))
+        if (!utils_1.fileExists(resource) && !overrideFileCheck)
             return;
         this.data.setLocation(resource);
         this.fileref.Data[0] = fileref_data_1.marshall(this.data);
@@ -44,6 +45,9 @@ var Fileref = /** @class */ (function () {
             };
             this.fileref.RelativePath[0].RelativePathElement.push(obj);
         }
+        this.fileref.LivePackName[0]['$'].Value = '';
+        this.fileref.LivePackId[0]['$'].Value = '';
+        this.fileref.RelativePathType[0]['$'].Value = '3';
     };
     return Fileref;
 }());
