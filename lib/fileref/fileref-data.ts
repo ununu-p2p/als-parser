@@ -103,7 +103,6 @@ export function unmarshall(stream: string) {
     // Next 4 control code
     if(stream.substr(cntr, 4) != '1300') throw Error("Data of the ref cannot be recognised: 1300");
     let footer = stream.substr(cntr);
-    
     return new FilerefData(header, systemName, location, footer);
 }
 

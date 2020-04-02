@@ -7,13 +7,13 @@ export class Fileref {
     data: FilerefData;
     constructor(fileref: any) {
         this.fileref = fileref;
-        let hex = fileref.Data[0].replace(/\n/g, '').replace(/\t/g, '');
+        let hex = fileref.Data[0].replace(/\n/g, '').replace(/\t/g, '').replace(/ /g, '');
         this.data = unmarshall(hex);
     }
     getLocation() {
         return this.data.getLocation('/');
     }
-    changeLocation(resourceFolder: string, project: string) {
+    changeLocation(resourceFolder: string, project: string, overrideFileCheck = false) {
         // Get the absolute path of the objects
         resourceFolder = path.resolve(resourceFolder);
         project = path.resolve(project);
@@ -21,7 +21,7 @@ export class Fileref {
         let resource = path.join(resourceFolder, this.data.getFileName());
         // Verify if the location Exists
         // TODO: Throw Error on resource doesn't exist
-        if (!fileExists(resource)) return;
+        if (!fileExists(resource) && !overrideFileCheck) return;
         this.data.setLocation(resource);
         this.fileref.Data[0] = marshall(this.data);
         // Remove the Path hint
@@ -40,6 +40,9 @@ export class Fileref {
             };
             this.fileref.RelativePath[0].RelativePathElement.push(obj);
         }
+        this.fileref.LivePackName[0]['$'].Value = '';
+        this.fileref.LivePackId[0]['$'].Value = '';
+        this.fileref.RelativePathType[0]['$'].Value = '3';
     }
 }
 

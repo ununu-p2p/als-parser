@@ -1,0 +1,42 @@
+<FileRef>
+    <HasRelativePath Value="true" />
+    <RelativePathType Value="3" />
+    <RelativePath>
+        <RelativePathElement Id="2" Dir="resources" />
+    </RelativePath>
+    <Name Value="A-Conga Low Slap 1.aif" />
+    <Type Value="2" />
+    <Data>
+        0000000001D6000200000C4D6163696E746F73682048440000000000000000000000000000000000
+        000042440001FFFFFFFF16412D436F6E6761204C6F7720536C617020312E61696600000000000000
+        00000000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0000
+        00000000000000000000FFFFFFFF00000A20637500000000000000000000000000097265736F7572
+        63657300000200662F3A55736572733A736872657374686167726177616C3A4465736B746F703A77
+        6F726B3A756E756E753A73616D706C652D70726F6A6563743A746F6D332050726F6A6563743A7265
+        736F75726365733A412D436F6E6761204C6F7720536C617020312E616966000E002E00160041002D
+        0043006F006E006700610020004C006F007700200053006C0061007000200031002E006100690066
+        000F001A000C004D006100630069006E0074006F007300680020004800440012006455736572732F
+        736872657374686167726177616C2F4465736B746F702F776F726B2F756E756E752F73616D706C65
+        2D70726F6A6563742F746F6D332050726F6A6563742F7265736F75726365732F412D436F6E676120
+        4C6F7720536C617020312E616966001300012F00001500020015FFFF0000
+    </Data>
+    <RefersToFolder Value="false" />
+    <SearchHint>
+        <PathHint>
+            <RelativePathElement Id="0" Dir="Users" />
+            <RelativePathElement Id="1" Dir="shresthagrawal" />
+            <RelativePathElement Id="2" Dir="Desktop" />
+            <RelativePathElement Id="3" Dir="work" />
+            <RelativePathElement Id="4" Dir="ununu" />
+            <RelativePathElement Id="5" Dir="sample-project" />
+            <RelativePathElement Id="6" Dir="tom3 Project" />
+            <RelativePathElement Id="7" Dir="resources" />
+        </PathHint>
+        <FileSize Value="161348" />
+        <Crc Value="3713" />
+        <MaxCrcSize Value="16384" />
+        <HasExtendedInfo Value="true" />
+    </SearchHint>
+    <LivePackName Value="" />
+    <LivePackId Value="" />
+</FileRef>

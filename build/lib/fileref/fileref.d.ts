@@ -4,5 +4,5 @@ export declare class Fileref {
     data: FilerefData;
     constructor(fileref: any);
     getLocation(): string;
-    changeLocation(resourceFolder: string, project: string): void;
+    changeLocation(resourceFolder: string, project: string, overrideFileCheck?: boolean): void;
 }

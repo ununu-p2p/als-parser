@@ -3,6 +3,8 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { ascii2hex, hex2ascii } from "../lib/fileref/utils";
 import { unmarshall, marshall, FilerefData } from "../lib/fileref/fileref-data";
+import { Fileref } from "../lib/fileref/fileref";
+import { loadXml } from "../lib/reader/xml";
 import path from "path";
 
 chai.use(chaiAsPromised);
@@ -43,7 +45,7 @@ const ascii = "Hello World!1234@#";
 // Test resource directory
 const tmpDir = "private/tmp/com.ununu.als-parser/";
 
-describe('Fileref', function() {
+describe('FilerefData', function() {
     describe ('Utils', function() {
         it('Hex to Ascii', function() {
             hex2ascii(hex).should.equal(ascii);
@@ -69,5 +71,25 @@ describe('Fileref', function() {
             data.setLocation(path.join('/', tmpDir, newLocation));
             marshall(data).should.equal(newStream);
         });
+    });
+});
+
+describe('Fileref', function() {
+    beforeEach(async function() {
+      this.originalRef = (await loadXml('./test/res/fileref-original.xml')).FileRef;
+      this.expectedRef = (await loadXml('./test/res/fileref-expected.xml')).FileRef;
+    });
+
+    describe ('Change Location', function() {
+        it('Change Location when internal resource is given', function() {
+            let originalRef = new Fileref(this.originalRef);
+            let expectedRef = new Fileref(this.expectedRef);
+            originalRef.changeLocation('resource',
+                '/Users/shresthagrawal/Desktop/work/ununu/sample-project/tom3 Project/tom3.als',
+                true);
+            originalRef.fileref.LivePackName.should.deep.equal(expectedRef.fileref.LivePackName);
+            originalRef.fileref.LivePackId.should.deep.equal(expectedRef.fileref.LivePackId);
+            originalRef.fileref.RelativePathType.should.deep.equal(expectedRef.fileref.RelativePathType);
+        })
     });
 });
