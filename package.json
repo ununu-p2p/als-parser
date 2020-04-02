@@ -1,6 +1,6 @@
 {
   "name": "als-parser",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Unofficial parser for Ableton Live project files (.als)",
   "main": "build/lib/index.js",
   "types": "build/lib/index.d.js",
