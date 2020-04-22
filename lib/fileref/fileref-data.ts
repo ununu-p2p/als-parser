@@ -4,25 +4,33 @@ import { ascii2hex, hex2ascii, hex2dec, dec2hex, lenPad, replaceAt } from "./uti
 export class FilerefData {
     header: string;
     diskName: string;
-    location: string;
+    relativeLocation: string;
     footer: string;
     external: boolean;
-    constructor(header: string, diskName: string, location: string,
-                footer: string, external: boolean) {
+    diskLocation: string;
+    constructor(header: string, diskName: string, relativeLocation: string,
+                footer: string, external: boolean, diskLocation: string) {
         this.header = header;
         this.diskName = diskName;
-        this.location = location;
+        this.relativeLocation = relativeLocation;
         this.footer = footer;
         this.external = external;
+        this.diskLocation = diskLocation;
     }
     getFileName() {
-        return path.parse(this.location).base;
+        return path.parse(this.relativeLocation).base;
     }
     getDir() {
-        return path.basename(path.dirname(this.location));
+        return path.basename(path.dirname(this.relativeLocation));
     }
     getLocation(delminator: string) {
-        return this.location.split(path.sep).join(delminator);
+        return path.join(this.diskLocation, this.relativeLocation).split(path.sep).join(delminator);
+    }
+    getRelativeLocation(delminator: string) {
+        return this.relativeLocation.split(path.sep).join(delminator);
+    }
+    getDiskLocation(delminator: string) {
+        return this.diskLocation.split(path.sep).join(delminator);
     }
     getDiskName() {
         return this.diskName;
@@ -37,10 +45,16 @@ export class FilerefData {
         return this.external;
     }
     setLocation(location: string) {
-        // Store the absolute location but donot have the deliminator in the start
+        /*
+        Currently we by default convert every location to absolute and 
+        store it as an internal file. In futre we might break the lcoation
+        to disk location and relative location.
+        */
         location = path.resolve(location);
         if (location[0] == path.sep) location = location.substr(1);
-        this.location = location;
+        this.relativeLocation = location;
+        this.diskLocation = '/';
+        this.external = false;
     }
 }
 
@@ -109,25 +123,28 @@ export function unmarshall(stream: string) {
     // Next 4 control code
     if(stream.substr(cntr, 4) != '1300') throw Error("Data of the ref cannot be recognised: 1300");
     // TODO: The footer would go down
-    let footer = stream.substr(cntr);
     cntr += 4;
     let diskLocationLength = hex2dec(stream.substr(cntr, 2));
     cntr += 2;
     let diskLocation = hex2ascii(stream.substr(cntr, diskLocationLength * 2));
-    // TODO: Not sure if this works with windowss
+    // TODO: Not sure if this works with windows
     let isExternal = diskLocation != '/';
-    return new FilerefData(header, diskName, path.join(diskLocation, location), footer, isExternal);
+    cntr += diskLocationLength * 2;
+    let footer = stream.substr(cntr);
+    return new FilerefData(header, diskName, location, footer, isExternal, diskLocation);
 }
 
 export function marshall(data: FilerefData) {
+    if (data.external) throw "Parser doesn't support marshalling external fileref";
+    
     // Starting 8 Padding, 4 total length, 6 unknown  
     let stream: string = data.getHeader();
     // Control Code
     stream += '0200';
     // length + 2, location with delminator :
-    stream += dec2hex(data.getLocation(':').length + 2);
-    stream += ascii2hex('/:' + data.getLocation(':'));
-    stream += lenPad(data.getLocation(':').length);
+    stream += dec2hex(data.getRelativeLocation(':').length + 2);
+    stream += ascii2hex('/:' + data.getRelativeLocation(':'));
+    stream += lenPad(data.getRelativeLocation(':').length);
     // Control Code
     stream += '0E00';
     // length of the file name with padding and length header (12*2 + 2 = 26), 2 padding
@@ -142,10 +159,14 @@ export function marshall(data: FilerefData) {
     stream += ascii2hex(data.getDiskName().split('').join('\0')) + '00';
     // Control Code
     stream += '1200';
-    stream += dec2hex(data.getLocation('/').length);
-    stream += ascii2hex(data.getLocation('/'));
-    stream += lenPad(data.getLocation('/').length);
-    // Unknwon end
+    stream += dec2hex(data.getRelativeLocation('/').length);
+    stream += ascii2hex(data.getRelativeLocation('/'));
+    stream += lenPad(data.getRelativeLocation('/').length);
+    // Control Code 
+    stream += '1300';
+    stream += dec2hex(data.getDiskLocation('/').length);
+    stream += ascii2hex(data.getDiskLocation('/'));
+    // Unknown end
     stream += data.getFooter();
     // Total size update
     let lenStr = dec2hex(stream.length / 2);

@@ -44,7 +44,7 @@ const header = "000000000140000200000C4D6163696E746F7368204844000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0000\
 00000000000000000000FFFFFFFF00000A2063750000000000000000000000000001640000";
 
-const footer = "1300012F00FFFF0000";
+const footer = "00FFFF0000";
 
 // TODO: Use a relative location as this location would not exist in every system.
 const location = "a/d/drum.aif";
@@ -54,7 +54,7 @@ const hex = "48656C6C6F20576F726C6421313233344023";
 const ascii = "Hello World!1234@#";
 
 // Test resource directory
-const tmpDir = "/private/tmp/com.ununu.als-parser/";
+const tmpDir = "private/tmp/com.ununu.als-parser/";
 
 describe('FilerefData', function() {
     describe ('Utils', function() {
@@ -68,13 +68,13 @@ describe('FilerefData', function() {
     describe ('Parsing', function() {
         it('Unmarshall when data stream is given', function() {
             let data = unmarshall(stream);
-            data.getLocation('/').should.equal(path.join(tmpDir, location));
+            data.getRelativeLocation('/').should.equal(path.join(tmpDir, location));
             data.getDiskName().should.equal(diskName);
             data.getHeader().should.equal(header);
             data.getFooter().should.equal(footer);
         });
         it('Marshall when location, diskName, and format is given', function() {
-            let data = new FilerefData(header, diskName, path.join(tmpDir, location), footer, false);
+            let data = new FilerefData(header, diskName, path.join(tmpDir, location), footer, false, '/');
             marshall(data).should.equal(stream);
         });
         it('Change Location when stream is given', function() {
@@ -84,8 +84,8 @@ describe('FilerefData', function() {
         });
         it('Unmarshall when data stream is for external resource', function() {
             let data = unmarshall(streamExternal);
-            data.getLocation('/').should.equal('/Volumes/smile-else-i-will-kill-u/lets-party.aif')
-            data.getDiskName().should.equal('smile-else-i-will-kill-u')
+            data.getLocation('/').should.equal('/Volumes/smile-else-i-will-kill-u/lets-party.aif');
+            data.getDiskName().should.equal('smile-else-i-will-kill-u');
             data.isExternal().should.equal(true);
         })
     });

@@ -79,7 +79,7 @@ var header = "000000000140000200000C4D6163696E746F736820484400000000000000000000
 000042440001FFFFFFFF086472756D2E616966000000000000000000000000000000000000000000\
 00000000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0000\
 00000000000000000000FFFFFFFF00000A2063750000000000000000000000000001640000";
-var footer = "1300012F00FFFF0000";
+var footer = "00FFFF0000";
 // TODO: Use a relative location as this location would not exist in every system.
 var location = "a/d/drum.aif";
 var newLocation = "b/d/drum.aif";
@@ -100,13 +100,13 @@ describe('FilerefData', function () {
     describe('Parsing', function () {
         it('Unmarshall when data stream is given', function () {
             var data = fileref_data_1.unmarshall(stream);
-            data.getLocation('/').should.equal(path_1.default.join(tmpDir, location));
+            data.getRelativeLocation('/').should.equal(path_1.default.join(tmpDir, location));
             data.getDiskName().should.equal(diskName);
             data.getHeader().should.equal(header);
             data.getFooter().should.equal(footer);
         });
         it('Marshall when location, diskName, and format is given', function () {
-            var data = new fileref_data_1.FilerefData(header, diskName, path_1.default.join(tmpDir, location), footer, false);
+            var data = new fileref_data_1.FilerefData(header, diskName, path_1.default.join(tmpDir, location), footer, false, '/');
             fileref_data_1.marshall(data).should.equal(stream);
         });
         it('Change Location when stream is given', function () {
@@ -115,7 +115,7 @@ describe('FilerefData', function () {
             fileref_data_1.marshall(data).should.equal(newStream);
         });
         it('Unmarshall when data stream is for external resource', function () {
-            var data = fileref_data_1.unmarshall(stream);
+            var data = fileref_data_1.unmarshall(streamExternal);
             data.getLocation('/').should.equal('/Volumes/smile-else-i-will-kill-u/lets-party.aif');
             data.getDiskName().should.equal('smile-else-i-will-kill-u');
             data.isExternal().should.equal(true);

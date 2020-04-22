@@ -6,21 +6,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __importDefault(require("path"));
 var utils_1 = require("./utils");
 var FilerefData = /** @class */ (function () {
-    function FilerefData(header, diskName, location, footer, external) {
+    function FilerefData(header, diskName, relativeLocation, footer, external, diskLocation) {
         this.header = header;
         this.diskName = diskName;
-        this.location = location;
+        this.relativeLocation = relativeLocation;
         this.footer = footer;
         this.external = external;
+        this.diskLocation = diskLocation;
     }
     FilerefData.prototype.getFileName = function () {
-        return path_1.default.parse(this.location).base;
+        return path_1.default.parse(this.relativeLocation).base;
     };
     FilerefData.prototype.getDir = function () {
-        return path_1.default.basename(path_1.default.dirname(this.location));
+        return path_1.default.basename(path_1.default.dirname(this.relativeLocation));
     };
     FilerefData.prototype.getLocation = function (delminator) {
-        return this.location.split(path_1.default.sep).join(delminator);
+        return path_1.default.join(this.diskLocation, this.relativeLocation).split(path_1.default.sep).join(delminator);
+    };
+    FilerefData.prototype.getRelativeLocation = function (delminator) {
+        return this.relativeLocation.split(path_1.default.sep).join(delminator);
+    };
+    FilerefData.prototype.getDiskLocation = function (delminator) {
+        return this.diskLocation.split(path_1.default.sep).join(delminator);
     };
     FilerefData.prototype.getDiskName = function () {
         return this.diskName;
@@ -35,11 +42,17 @@ var FilerefData = /** @class */ (function () {
         return this.external;
     };
     FilerefData.prototype.setLocation = function (location) {
-        // Store the absolute location but donot have the deliminator in the start
+        /*
+        Currently we by default convert every location to absolute and
+        store it as an internal file. In futre we might break the lcoation
+        to disk location and relative location.
+        */
         location = path_1.default.resolve(location);
         if (location[0] == path_1.default.sep)
             location = location.substr(1);
-        this.location = location;
+        this.relativeLocation = location;
+        this.diskLocation = '/';
+        this.external = false;
     };
     return FilerefData;
 }());
@@ -89,17 +102,17 @@ function unmarshall(stream) {
     cntr += 4;
     // Length of total sytem name length blob, 2 padding
     cntr += 4;
-    // length of system name string, 2 padding
-    var systemNameLength = utils_1.hex2dec(stream.substr(cntr, 2));
+    // length of disk name string, 2 padding
+    var diskNameLength = utils_1.hex2dec(stream.substr(cntr, 2));
     cntr += 4;
     // Name length with each char with 2 padding
-    var diskName = utils_1.hex2ascii(stream.substr(cntr, systemNameLength * 4));
-    cntr += systemNameLength * 4;
+    var diskName = utils_1.hex2ascii(stream.substr(cntr, diskNameLength * 4));
+    cntr += diskNameLength * 4;
     // Next 4 control code
     if (stream.substr(cntr, 4) != '1200')
         throw Error("Data of the ref cannot be recognised: 1200");
     cntr += 4;
-    // length of system name string
+    // length of disk name string
     locationLength = utils_1.hex2dec(stream.substr(cntr, 2));
     cntr += 2;
     // Name length with each char with 2 padding
@@ -109,19 +122,29 @@ function unmarshall(stream) {
     // Next 4 control code
     if (stream.substr(cntr, 4) != '1300')
         throw Error("Data of the ref cannot be recognised: 1300");
+    // TODO: The footer would go down
+    cntr += 4;
+    var diskLocationLength = utils_1.hex2dec(stream.substr(cntr, 2));
+    cntr += 2;
+    var diskLocation = utils_1.hex2ascii(stream.substr(cntr, diskLocationLength * 2));
+    // TODO: Not sure if this works with windows
+    var isExternal = diskLocation != '/';
+    cntr += diskLocationLength * 2;
     var footer = stream.substr(cntr);
-    return new FilerefData(header, diskName, location, footer, false);
+    return new FilerefData(header, diskName, location, footer, isExternal, diskLocation);
 }
 exports.unmarshall = unmarshall;
 function marshall(data) {
+    if (data.external)
+        throw "Parser doesn't support marshalling external fileref";
     // Starting 8 Padding, 4 total length, 6 unknown  
     var stream = data.getHeader();
     // Control Code
     stream += '0200';
     // length + 2, location with delminator :
-    stream += utils_1.dec2hex(data.getLocation(':').length + 2);
-    stream += utils_1.ascii2hex('/:' + data.getLocation(':'));
-    stream += utils_1.lenPad(data.getLocation(':').length);
+    stream += utils_1.dec2hex(data.getRelativeLocation(':').length + 2);
+    stream += utils_1.ascii2hex('/:' + data.getRelativeLocation(':'));
+    stream += utils_1.lenPad(data.getRelativeLocation(':').length);
     // Control Code
     stream += '0E00';
     // length of the file name with padding and length header (12*2 + 2 = 26), 2 padding
@@ -130,16 +153,20 @@ function marshall(data) {
     stream += utils_1.ascii2hex(data.getFileName().split('').join('\0')) + '00';
     // Control Code
     stream += '0F00';
-    // length of the system name with padding and length header (12*2 + 2 = 26), 2 padding
+    // length of the disk name with padding and length header (12*2 + 2 = 26), 2 padding
     stream += utils_1.dec2hex((data.getDiskName().length * 2) + 2) + '00';
     stream += utils_1.dec2hex(data.getDiskName().length) + '00';
     stream += utils_1.ascii2hex(data.getDiskName().split('').join('\0')) + '00';
     // Control Code
     stream += '1200';
-    stream += utils_1.dec2hex(data.getLocation('/').length);
-    stream += utils_1.ascii2hex(data.getLocation('/'));
-    stream += utils_1.lenPad(data.getLocation('/').length);
-    // Unknwon end
+    stream += utils_1.dec2hex(data.getRelativeLocation('/').length);
+    stream += utils_1.ascii2hex(data.getRelativeLocation('/'));
+    stream += utils_1.lenPad(data.getRelativeLocation('/').length);
+    // Control Code 
+    stream += '1300';
+    stream += utils_1.dec2hex(data.getDiskLocation('/').length);
+    stream += utils_1.ascii2hex(data.getDiskLocation('/'));
+    // Unknown end
     stream += data.getFooter();
     // Total size update
     var lenStr = utils_1.dec2hex(stream.length / 2);
