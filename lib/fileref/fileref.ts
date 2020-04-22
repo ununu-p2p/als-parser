@@ -29,16 +29,18 @@ export class Fileref {
         // Update the Relative path
         let projectFolder = path.parse(project).dir;
         let relativePathArray = path.relative(projectFolder, resourceFolder).split(path.sep);
-        this.fileref.RelativePath[0].RelativePathElement = [];
-        for (let index in relativePathArray) {
-            if (relativePathArray[index] == "..") relativePathArray[index] = '';
-            let obj = {
-                '$': {
-                    Id: index.toString(),
-                    Dir: relativePathArray[index]
-                }
-            };
-            this.fileref.RelativePath[0].RelativePathElement.push(obj);
+        if (this.fileref.HasRelativePath[0]['$'].Value === "true") {
+            this.fileref.RelativePath[0].RelativePathElement = [];
+            for (let index in relativePathArray) {
+                if (relativePathArray[index] == "..") relativePathArray[index] = '';
+                let obj = {
+                    '$': {
+                        Id: index.toString(),
+                        Dir: relativePathArray[index]
+                    }
+                };
+                this.fileref.RelativePath[0].RelativePathElement.push(obj);
+            }
         }
         this.fileref.LivePackName[0]['$'].Value = '';
         this.fileref.LivePackId[0]['$'].Value = '';
