@@ -27,17 +27,23 @@ const sampleXml = "a.xml";
 
 // Resource List
 const resources = [
-  "/private/tmp/com.ununu.als-parser/a/d/drum.aif",
-  "/private/tmp/com.ununu.als-parser/a/d/audio.aif",
-  "/Users/ama/Downloads/Reverb Default.adv",
-  "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+  "../../a/d/drum.aif",
+  "../../a/d/audio.aif",
 ];
 
+const resourcesInternal = [
+  "../../a/d/drum.aif",
+  "../../a/d/audio.aif",
+  "Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+];
+
+const recordedResources = [
+  "Samples/Recorded/1-Audio 0001 [2020-06-26 114704].aif",
+]
+
 const modifiedResource = [
-  "/private/tmp/com.ununu.als-parser/b/d/drum.aif",
-  "/private/tmp/com.ununu.als-parser/b/d/audio.aif",
-  "/Users/ama/Downloads/Reverb Default.adv",
-  "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+  "../b/d/drum.aif",
+  "../b/d/audio.aif",
 ];
 
 describe("Parser", function() {
@@ -129,14 +135,71 @@ describe("Parser", function() {
       const parser = await parseFile("/foo/project.als");
       parser.getResourceLocations().should.eql(resources);
     });
+
+    it("Get the list of resourcefiles including internal when als project file is given", async function() {
+      const parser = await parseFile("/foo/project.als");
+      parser.getResourceLocations(true).should.eql(resourcesInternal);
+    });
+
     it("Change location of all resourcefiles when als project file is given", async function() {
-      const newLocation = "/private/tmp/com.ununu.als-parser/b/d/";
+      const newLocation = "/b/d";
 
       const parser = await parseFile("/foo/project.als");
-      parser.changeResourceLocations(newLocation);
+      parser.changeResourceLocations(newLocation, undefined, undefined, true);
 
-      const secondParser = await parseFile(path.join("/foo/project.als"));
+      const secondParser = await parseFile("/foo/project.als");
       secondParser.getResourceLocations().should.eql(modifiedResource);
     });
   });
+
+  describe("Recorded", function() {
+    beforeEach(async function() {
+      const mockVolume = new Volume();
+
+      mountDirectory(
+        mockVolume,
+        path.join(__dirname, "res/recorded-audio"), {
+        dest: path.join(tmp, "/recorded-audio")
+      });
+
+      mountDirectory(
+        mockVolume,
+        path.join(__dirname, "res/drums"), {
+        dest: path.join(tmp, "/drums")
+      });
+
+      mountDirectory(
+        mockVolume,
+        path.join(__dirname, "res/drums-midi"), {
+        dest: path.join(tmp, "/drums-midi")
+      });
+
+      this.unpatch = patchFs(mockVolume);
+    });
+
+    afterEach(function() {
+      if (this.unpatch) {
+        this.unpatch();
+      }
+    });
+
+    it("Get the list of resourcefiles when als project with recorded audio is given", async function() {
+      const projectFile = path.join(tmp, "/recorded-audio/recorded-audio.als")
+      const parser = await parseFile(projectFile);
+      parser.getResourceLocations().should.eql(recordedResources);
+    });
+
+    it("Get the list of resourcefiles when als project with recorded drums is given", async function() {
+      const projectFile = path.join(tmp, "/drums/drums.als")
+      const parser = await parseFile(projectFile);
+      parser.getResourceLocations().should.eql([]);
+    });
+
+    it("Get the list of resourcefiles when als project with drums midi is given", async function() {
+      const projectFile = path.join(tmp, "/drums-midi/drums-midi.als")
+      const parser = await parseFile(projectFile);
+      parser.getResourceLocations().should.eql([]);
+    });
+  });
+
 });
