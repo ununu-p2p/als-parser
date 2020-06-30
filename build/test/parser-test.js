@@ -63,16 +63,20 @@ var sampleAls = "a.als";
 var sampleXml = "a.xml";
 // Resource List
 var resources = [
-    "/private/tmp/com.ununu.als-parser/a/d/drum.aif",
-    "/private/tmp/com.ununu.als-parser/a/d/audio.aif",
-    "/Users/ama/Downloads/Reverb Default.adv",
-    "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+    "../../a/d/drum.aif",
+    "../../a/d/audio.aif",
+];
+var resourcesInternal = [
+    "../../a/d/drum.aif",
+    "../../a/d/audio.aif",
+    "Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+];
+var recordedResources = [
+    "Samples/Recorded/1-Audio 0001 [2020-06-26 114704].aif",
 ];
 var modifiedResource = [
-    "/private/tmp/com.ununu.als-parser/b/d/drum.aif",
-    "/private/tmp/com.ununu.als-parser/b/d/audio.aif",
-    "/Users/ama/Downloads/Reverb Default.adv",
-    "/Users/mak/Library/Application Support/Ableton/Live 10 Core Library/Devices/Audio Effects/Simple Delay/Dotted Eighth Note.adv"
+    "../b/d/drum.aif",
+    "../b/d/audio.aif",
 ];
 describe("Parser", function () {
     describe("Parse File", function () {
@@ -183,21 +187,109 @@ describe("Parser", function () {
                 });
             });
         });
+        it("Get the list of resourcefiles including internal when als project file is given", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
+                        case 1:
+                            parser = _a.sent();
+                            parser.getResourceLocations(true).should.eql(resourcesInternal);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
         it("Change location of all resourcefiles when als project file is given", function () {
             return __awaiter(this, void 0, void 0, function () {
                 var newLocation, parser, secondParser;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            newLocation = "/private/tmp/com.ununu.als-parser/b/d/";
+                            newLocation = "/b/d";
                             return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 1:
                             parser = _a.sent();
-                            parser.changeResourceLocations(newLocation);
-                            return [4 /*yield*/, lib_1.parseFile(path_1.default.join("/foo/project.als"))];
+                            parser.changeResourceLocations(newLocation, undefined, undefined, true);
+                            return [4 /*yield*/, lib_1.parseFile("/foo/project.als")];
                         case 2:
                             secondParser = _a.sent();
                             secondParser.getResourceLocations().should.eql(modifiedResource);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+    });
+    describe("Recorded", function () {
+        beforeEach(function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var mockVolume;
+                return __generator(this, function (_a) {
+                    mockVolume = new memfs_1.Volume();
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res/recorded-audio"), {
+                        dest: path_1.default.join(tmp, "/recorded-audio")
+                    });
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res/drums"), {
+                        dest: path_1.default.join(tmp, "/drums")
+                    });
+                    memory_fs_1.mountDirectory(mockVolume, path_1.default.join(__dirname, "res/drums-midi"), {
+                        dest: path_1.default.join(tmp, "/drums-midi")
+                    });
+                    this.unpatch = fs_monkey_1.patchFs(mockVolume);
+                    return [2 /*return*/];
+                });
+            });
+        });
+        afterEach(function () {
+            if (this.unpatch) {
+                this.unpatch();
+            }
+        });
+        it("Get the list of resourcefiles when als project with recorded audio is given", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var projectFile, parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            projectFile = path_1.default.join(tmp, "/recorded-audio/recorded-audio.als");
+                            return [4 /*yield*/, lib_1.parseFile(projectFile)];
+                        case 1:
+                            parser = _a.sent();
+                            parser.getResourceLocations().should.eql(recordedResources);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        it("Get the list of resourcefiles when als project with recorded drums is given", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var projectFile, parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            projectFile = path_1.default.join(tmp, "/drums/drums.als");
+                            return [4 /*yield*/, lib_1.parseFile(projectFile)];
+                        case 1:
+                            parser = _a.sent();
+                            parser.getResourceLocations().should.eql([]);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+        it("Get the list of resourcefiles when als project with drums midi is given", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var projectFile, parser;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            projectFile = path_1.default.join(tmp, "/drums-midi/drums-midi.als");
+                            return [4 /*yield*/, lib_1.parseFile(projectFile)];
+                        case 1:
+                            parser = _a.sent();
+                            parser.getResourceLocations().should.eql([]);
                             return [2 /*return*/];
                     }
                 });

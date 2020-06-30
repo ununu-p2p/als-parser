@@ -35,14 +35,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var path_1 = __importDefault(require("path"));
 var reader_1 = require("./reader/reader");
 var fileref_1 = require("./fileref/fileref");
 var utils_1 = require("./utils");
+var defaultTracks = ['Reverb Default.adv'];
 var AbletonParser = /** @class */ (function () {
     function AbletonParser(file) {
         this.file = file;
@@ -72,9 +69,10 @@ var AbletonParser = /** @class */ (function () {
         }
         return trackCount;
     };
-    AbletonParser.prototype.getResourceLocations = function () {
+    AbletonParser.prototype.getResourceLocations = function (internal) {
+        if (internal === void 0) { internal = false; }
         var resList = new Set();
-        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendResourceList, resList);
+        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.appendResourceList, resList, internal);
         return Array.from(resList);
     };
     AbletonParser.prototype.getFilerefs = function () {
@@ -85,19 +83,36 @@ var AbletonParser = /** @class */ (function () {
     AbletonParser.prototype.appendReferenceList = function (obj, resList) {
         resList.add(obj[0]);
     };
-    AbletonParser.prototype.appendResourceList = function (obj, resList) {
+    AbletonParser.prototype.appendResourceList = function (obj, resList, internal) {
+        if (internal === void 0) { internal = false; }
         var fileref = new fileref_1.Fileref(obj[0]);
-        resList.add(path_1.default.join('/', fileref.getLocation()));
+        var fileName = fileref.getFileName();
+        if (fileName != '' && !defaultTracks.includes(fileName)) {
+            if (!fileref.isInternal || internal) {
+                resList.add(fileref.getRelativeLocation());
+            }
+        }
     };
-    AbletonParser.prototype.changeResourceLocations = function (location) {
+    AbletonParser.prototype.changeResourceLocations = function (location, internal, useData, overideFileCheck) {
+        if (internal === void 0) { internal = false; }
+        if (useData === void 0) { useData = false; }
+        if (overideFileCheck === void 0) { overideFileCheck = false; }
         // Modify the XmlJ
-        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.changeLocation, location, this.file);
+        utils_1.deepRecurrsion(this.reader.xmlJs, 'FileRef', this.changeLocation, location, this.file, internal, useData, overideFileCheck);
         // Save the Modified reader.xmlJs
         this.reader.save(this.file);
     };
-    AbletonParser.prototype.changeLocation = function (obj, resourceFolder, project) {
-        var fileref = new fileref_1.Fileref(obj[0]);
-        fileref.changeLocation(resourceFolder, project);
+    AbletonParser.prototype.changeLocation = function (obj, resourceFolder, project, internal, useData, overideFileCheck) {
+        if (internal === void 0) { internal = false; }
+        if (useData === void 0) { useData = false; }
+        if (overideFileCheck === void 0) { overideFileCheck = false; }
+        var fileref = new fileref_1.Fileref(obj[0], useData);
+        var fileName = fileref.getFileName();
+        if (fileref.getFileName() != '' && !defaultTracks.includes(fileName)) {
+            if (!fileref.isInternal || internal) {
+                fileref.changeLocation(resourceFolder, project, overideFileCheck);
+            }
+        }
     };
     return AbletonParser;
 }());
