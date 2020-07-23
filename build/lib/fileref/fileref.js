@@ -62,17 +62,19 @@ var Fileref = /** @class */ (function () {
         // Update the Relative path
         var projectFolder = path_1.default.parse(project).dir;
         var relativePathArray = path_1.default.relative(projectFolder, resourceFolder).split(path_1.default.sep);
-        this.fileref.RelativePath[0].RelativePathElement = [];
-        for (var index in relativePathArray) {
-            if (relativePathArray[index] == "..")
-                relativePathArray[index] = '';
-            var obj = {
-                '$': {
-                    Id: index.toString(),
-                    Dir: relativePathArray[index]
-                }
-            };
-            this.fileref.RelativePath[0].RelativePathElement.push(obj);
+        if (this.fileref.HasRelativePath[0]['$'].Value === "true") {
+            this.fileref.RelativePath[0].RelativePathElement = [];
+            for (var index in relativePathArray) {
+                if (relativePathArray[index] == "..")
+                    relativePathArray[index] = '';
+                var obj = {
+                    '$': {
+                        Id: index.toString(),
+                        Dir: relativePathArray[index]
+                    }
+                };
+                this.fileref.RelativePath[0].RelativePathElement.push(obj);
+            }
         }
         this.fileref.LivePackName[0]['$'].Value = '';
         this.fileref.LivePackId[0]['$'].Value = '';

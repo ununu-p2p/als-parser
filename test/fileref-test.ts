@@ -28,17 +28,28 @@ const newStream = "000000000140000200000C4D6163696E746F7368204844000000000000000
 00630069006E0074006F007300680020004800440012002D707269766174652F746D702F636F6D2E\
 756E756E752E616C732D7061727365722F622F642F6472756D2E61696600001300012F00FFFF0000";
 
+const streamExternal = "0000000001900002000018736D696C652D656C73652D692D77696C6C2D6B696C6C2D75000000DA98\
+F20D482B0005000000020E6C6574732D70617274792E616966000000000000000000000000000000\
+0000000000000000000000000000000000000000000000000000000000000000000000000071D9A3\
+D5FB4149464600000000FFFFFFFF0000090200000000000000000000000000000018736D696C652D\
+656C73652D692D77696C6C2D6B696C6C2D75001000080000DA98E3FD0000001100080000D9A3B9DB\
+00000001000000020027736D696C652D656C73652D692D77696C6C2D6B696C6C2D753A6C6574732D\
+70617274792E61696600000E001E000E006C006500740073002D00700061007200740079002E0061\
+00690066000F003200180073006D0069006C0065002D0065006C00730065002D0069002D00770069\
+006C006C002D006B0069006C006C002D00750012000F2F6C6574732D70617274792E616966000013\
+00212F566F6C756D65732F736D696C652D656C73652D692D77696C6C2D6B696C6C2D7500FFFF0000";
+
 const header = "000000000140000200000C4D6163696E746F73682048440000000000000000000000000000000000\
 000042440001FFFFFFFF086472756D2E616966000000000000000000000000000000000000000000\
 00000000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0000\
 00000000000000000000FFFFFFFF00000A2063750000000000000000000000000001640000";
 
-const footer = "1300012F00FFFF0000";
+const footer = "00FFFF0000";
 
 // TODO: Use a relative location as this location would not exist in every system.
 const location = "a/d/drum.aif";
 const newLocation = "b/d/drum.aif";
-const systemName = "Macintosh HD";
+const diskName = "Macintosh HD";
 const hex = "48656C6C6F20576F726C6421313233344023";
 const ascii = "Hello World!1234@#";
 
@@ -57,13 +68,13 @@ describe('FilerefData', function() {
     describe ('Parsing', function() {
         it('Unmarshall when data stream is given', function() {
             let data = unmarshall(stream);
-            data.getLocation('/').should.equal(path.join(tmpDir, location));
-            data.getSystemName().should.equal(systemName);
+            data.getRelativeLocation('/').should.equal(path.join(tmpDir, location));
+            data.getDiskName().should.equal(diskName);
             data.getHeader().should.equal(header);
             data.getFooter().should.equal(footer);
         });
-        it('Marshall when location, systemName, and format is given', function() {
-            let data = new FilerefData(header, systemName, path.join(tmpDir, location), footer);
+        it('Marshall when location, diskName, and format is given', function() {
+            let data = new FilerefData(header, diskName, path.join(tmpDir, location), footer, false, '/');
             marshall(data).should.equal(stream);
         });
         it('Change Location when stream is given', function() {
@@ -71,6 +82,12 @@ describe('FilerefData', function() {
             data.setLocation(path.join('/', tmpDir, newLocation));
             marshall(data).should.equal(newStream);
         });
+        it('Unmarshall when data stream is for external resource', function() {
+            let data = unmarshall(streamExternal);
+            data.getLocation('/').should.equal('/Volumes/smile-else-i-will-kill-u/lets-party.aif');
+            data.getDiskName().should.equal('smile-else-i-will-kill-u');
+            data.isExternal().should.equal(true);
+        })
     });
 });
 
